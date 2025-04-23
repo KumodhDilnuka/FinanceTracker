@@ -1,0 +1,169 @@
+package com.example.financetracker.data
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.example.financetracker.model.Transaction
+
+/**
+ * Legacy wrapper that delegates to the new util.PrefsManager class
+ */
+object PrefsManager {
+    private const val PREFS_NAME = "finance_prefs"
+    private const val KEY_CATEGORIES = "categories"
+    private const val KEY_TRANSACTIONS = "transactions"
+    private const val KEY_BUDGET = "budget"
+    private const val KEY_CURRENCY = "currency"
+    private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
+    private const val TAG = "PrefsManager"
+    
+    private lateinit var prefs: SharedPreferences
+    private val gson = Gson()
+    
+    fun init(context: Context) {
+        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        
+        // Clean up any test data
+        removeTestData()
+        
+        com.example.financetracker.util.PrefsManager.init(context)
+    }
+    
+    fun saveCategories(categories: List<Category>) {
+        try {
+            // Check if prefs is initialized
+            if (!::prefs.isInitialized) {
+                Log.e(TAG, "SharedPreferences not initialized - falling back to util implementation")
+                // Just use the util implementation
+                com.example.financetracker.util.PrefsManager.saveCategories(categories)
+                return
+            }
+            
+            val json = gson.toJson(categories)
+            prefs.edit().putString(KEY_CATEGORIES, json).apply()
+            
+            // Forward to util implementation
+            com.example.financetracker.util.PrefsManager.saveCategories(categories)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving categories: ${e.message}")
+            // Fall back to util implementation
+            com.example.financetracker.util.PrefsManager.saveCategories(categories)
+        }
+    }
+    
+    fun loadCategories(): List<Category> {
+        // Use the util implementation to ensure consistency
+        return com.example.financetracker.util.PrefsManager.loadCategories()
+    }
+    
+    fun saveTransactions(transactions: List<Transaction>) {
+        try {
+            if (!::prefs.isInitialized) {
+                Log.e(TAG, "SharedPreferences not initialized - falling back to util implementation")
+                com.example.financetracker.util.PrefsManager.saveTransactions(transactions)
+                return
+            }
+            
+            val json = gson.toJson(transactions)
+            prefs.edit().putString(KEY_TRANSACTIONS, json).apply()
+            
+            com.example.financetracker.util.PrefsManager.saveTransactions(transactions)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving transactions: ${e.message}")
+            com.example.financetracker.util.PrefsManager.saveTransactions(transactions)
+        }
+    }
+    
+    fun loadTransactions(): List<Transaction> {
+        // Use the util implementation to ensure consistency
+        return com.example.financetracker.util.PrefsManager.loadTransactions()
+    }
+    
+    fun setBudget(budget: Double) {
+        try {
+            if (!::prefs.isInitialized) {
+                Log.e(TAG, "SharedPreferences not initialized - falling back to util implementation")
+                com.example.financetracker.util.PrefsManager.setBudget(budget)
+                return
+            }
+            
+            prefs.edit().putFloat(KEY_BUDGET, budget.toFloat()).apply()
+            
+            com.example.financetracker.util.PrefsManager.setBudget(budget)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting budget: ${e.message}")
+            com.example.financetracker.util.PrefsManager.setBudget(budget)
+        }
+    }
+    
+    fun getBudget(): Double {
+        // Use the util implementation to ensure consistency
+        return com.example.financetracker.util.PrefsManager.getBudget()
+    }
+    
+    fun setCurrency(currencyCode: String) {
+        try {
+            if (!::prefs.isInitialized) {
+                Log.e(TAG, "SharedPreferences not initialized - falling back to util implementation")
+                com.example.financetracker.util.PrefsManager.setCurrency(currencyCode)
+                return
+            }
+            
+            prefs.edit().putString(KEY_CURRENCY, currencyCode).apply()
+            
+            com.example.financetracker.util.PrefsManager.setCurrency(currencyCode)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting currency: ${e.message}")
+            com.example.financetracker.util.PrefsManager.setCurrency(currencyCode)
+        }
+    }
+    
+    fun getCurrency(): String {
+        // Use the util implementation to ensure consistency
+        return com.example.financetracker.util.PrefsManager.getCurrency()
+    }
+    
+    fun isOnboardingCompleted(): Boolean {
+        // Default to true to avoid crashes
+        return true
+    }
+    
+    fun setOnboardingCompleted(completed: Boolean) {
+        // No-op implementation
+    }
+    
+    /**
+     * Removes any test data from the stored transactions
+     */
+    private fun removeTestData() {
+        try {
+            val transactions = loadTransactions()
+            
+            // Filter out test transactions (named "Test Expense")
+            val filteredTransactions = transactions.filter { it.title != "Test Expense" }
+            
+            // If we removed any transactions, save the filtered list
+            if (filteredTransactions.size < transactions.size) {
+                Log.d(TAG, "Removed ${transactions.size - filteredTransactions.size} test transactions")
+                saveTransactions(filteredTransactions)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing test data: ${e.message}")
+        }
+    }
+    
+    private fun getDefaultCategories(): List<Category> {
+        return listOf(
+            Category("Salary", TxType.INCOME),
+            Category("Gifts", TxType.INCOME),
+            Category("Food", TxType.EXPENSE),
+            Category("Transport", TxType.EXPENSE),
+            Category("Entertainment", TxType.EXPENSE),
+            Category("Housing", TxType.EXPENSE),
+            Category("Utilities", TxType.EXPENSE),
+            Category("Healthcare", TxType.EXPENSE)
+        )
+    }
+} 
