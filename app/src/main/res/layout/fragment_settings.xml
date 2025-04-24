@@ -5,28 +5,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
+    android:background="?android:colorBackground"
     tools:context=".ui.SettingsFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorBackground"
+        android:background="?android:colorBackground"
         app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorBackground">
+            android:background="?android:colorBackground">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Settings"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </androidx.appcompat.widget.Toolbar>
@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="Currency Settings"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -59,7 +59,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -71,7 +71,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Select Currency"
-                        android:textColor="@color/secondary"
+                        android:textColor="?android:textColorSecondary"
                         android:textSize="16sp" />
 
                     <Spinner
@@ -86,11 +86,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:backgroundTint="@color/primary"
+                        android:backgroundTint="?attr/colorPrimary"
                         android:paddingHorizontal="20dp"
                         android:paddingVertical="10dp"
                         android:text="Apply Currency"
-                        android:textColor="@color/white" />
+                        android:textColor="?attr/colorOnPrimary" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -101,7 +101,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="Budget Settings"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -111,7 +111,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -124,10 +124,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Monthly Budget"
-                        app:boxStrokeColor="@color/secondary"
-                        app:hintTextColor="@color/secondary"
+                        app:boxStrokeColor="?attr/colorSecondary"
+                        app:hintTextColor="?attr/colorSecondary"
                         app:helperText="Amount will be converted to system currency if needed"
-                        app:helperTextTextColor="@color/secondary"
+                        app:helperTextTextColor="?android:textColorSecondary"
                         app:helperTextEnabled="true">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -142,11 +142,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:backgroundTint="@color/primary"
+                        android:backgroundTint="?attr/colorPrimary"
                         android:paddingHorizontal="20dp"
                         android:paddingVertical="10dp"
                         android:text="Save Budget"
-                        android:textColor="@color/white" />
+                        android:textColor="?attr/colorOnPrimary" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -157,7 +157,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="Backup and Restore"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -167,7 +167,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -180,26 +180,115 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:textColor="@color/secondary"
+                        android:textColor="?android:textColorSecondary"
                         android:textSize="14sp"
                         tools:text="Last backup: Apr 23, 2025 12:30" />
+                        
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Backup Storage Location"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="8dp" />
+                        
+                    <RadioGroup
+                        android:id="@+id/radioGroupBackupStorage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+                        
+                        <RadioButton
+                            android:id="@+id/radioInternalStorage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Internal Storage"
+                            android:textColor="?android:textColorSecondary"
+                            android:layout_marginEnd="16dp" />
+                            
+                        <RadioButton
+                            android:id="@+id/radioExternalStorage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="External Storage"
+                            android:textColor="?android:textColorSecondary"
+                            android:checked="true" />
+                    </RadioGroup>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonBackup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@color/primary"
+                        android:backgroundTint="?attr/colorPrimary"
                         android:text="Create Backup"
-                        android:textColor="@color/white" />
+                        android:textColor="?attr/colorOnPrimary" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonRestore"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:backgroundTint="@color/secondary"
+                        android:backgroundTint="?attr/colorSecondary"
                         android:text="Restore from Backup"
-                        android:textColor="@color/white" />
+                        android:textColor="?attr/colorOnSecondary" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Theme Settings Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Theme Settings"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Dark Mode"
+                            android:textColor="?android:textColorSecondary"
+                            android:textSize="16sp"
+                            android:gravity="center_vertical"
+                            android:layout_gravity="center_vertical" />
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchDarkMode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="false" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Enable dark mode for a more comfortable viewing experience in low light"
+                        android:textSize="12sp"
+                        android:textColor="?android:textColorSecondary" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -210,7 +299,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="About"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -219,7 +308,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -231,7 +320,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Trezo App"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -240,7 +329,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Version 1.0"
-                        android:textColor="@color/secondary"
+                        android:textColor="?android:textColorSecondary"
                         android:textSize="14sp" />
 
                 </LinearLayout>

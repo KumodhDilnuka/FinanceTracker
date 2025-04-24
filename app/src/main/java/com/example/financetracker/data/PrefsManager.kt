@@ -17,6 +17,7 @@ object PrefsManager {
     private const val KEY_BUDGET = "budget"
     private const val KEY_CURRENCY = "currency"
     private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
+    private const val KEY_USE_INTERNAL_STORAGE = "use_internal_storage"
     private const val TAG = "PrefsManager"
     
     private lateinit var prefs: SharedPreferences
@@ -194,5 +195,36 @@ object PrefsManager {
             Category("Utilities", TxType.EXPENSE),
             Category("Healthcare", TxType.EXPENSE)
         )
+    }
+    
+    /**
+     * Gets the preference for backup storage location
+     * @return true if internal storage should be used, false for external
+     */
+    fun getUseInternalStorageForBackup(): Boolean {
+        // Delegate to the util implementation
+        return com.example.financetracker.util.PrefsManager.getUseInternalStorageForBackup()
+    }
+    
+    /**
+     * Sets the preference for backup storage location
+     * @param useInternal true for internal storage, false for external
+     */
+    fun setUseInternalStorageForBackup(useInternal: Boolean) {
+        try {
+            if (!::prefs.isInitialized) {
+                Log.e(TAG, "SharedPreferences not initialized - falling back to util implementation")
+                com.example.financetracker.util.PrefsManager.setUseInternalStorageForBackup(useInternal)
+                return
+            }
+            
+            prefs.edit().putBoolean(KEY_USE_INTERNAL_STORAGE, useInternal).apply()
+            
+            // Also update in the util implementation
+            com.example.financetracker.util.PrefsManager.setUseInternalStorageForBackup(useInternal)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting backup storage preference: ${e.message}")
+            com.example.financetracker.util.PrefsManager.setUseInternalStorageForBackup(useInternal)
+        }
     }
 } 

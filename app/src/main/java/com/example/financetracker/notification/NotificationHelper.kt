@@ -125,20 +125,12 @@ object NotificationHelper {
         Log.d(TAG, "Checking budget: spent=$spent, budget=$budget")
         val percentage = ((spent / budget) * 100).toInt()
         
-        when {
-            // If over budget, show the exceeded notification
-            spent > budget -> {
-                Log.d(TAG, "Budget EXCEEDED! ($percentage% spent)")
-                notifyBudgetExceeded(context)
-            }
-            // If approaching budget (90% or more), show the approaching notification
-            percentage >= 90 -> {
-                Log.d(TAG, "Budget approaching limit ($percentage% spent)")
-                notifyApproachingBudget(context, percentage)
-            }
-            else -> {
-                Log.d(TAG, "Budget is fine ($percentage% spent)")
-            }
+        // Only show notification when budget is exceeded
+        if (spent > budget) {
+            Log.d(TAG, "Budget EXCEEDED! ($percentage% spent)")
+            notifyBudgetExceeded(context)
+        } else {
+            Log.d(TAG, "Budget is fine ($percentage% spent)")
         }
     }
 } 

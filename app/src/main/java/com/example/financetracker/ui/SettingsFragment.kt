@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.financetracker.R
 import com.example.financetracker.data.PrefsManager
 import com.example.financetracker.data.Transaction
@@ -27,6 +28,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.io.File
+import android.os.Build
+import java.util.*
+import java.text.SimpleDateFormat
 
 class SettingsFragment : Fragment() {
 
@@ -38,6 +42,10 @@ class SettingsFragment : Fragment() {
     private lateinit var textBackupInfo: TextView
     private lateinit var buttonBackup: Button
     private lateinit var buttonRestore: Button
+    private lateinit var switchDarkMode: com.google.android.material.switchmaterial.SwitchMaterial
+    private lateinit var radioGroupBackupStorage: RadioGroup
+    private lateinit var radioInternalStorage: RadioButton
+    private lateinit var radioExternalStorage: RadioButton
     
     private val REQUEST_OPEN_DOCUMENT = 1001
     private val REQUEST_STORAGE_PERMISSION = 1002
@@ -87,6 +95,19 @@ class SettingsFragment : Fragment() {
         textBackupInfo = view.findViewById(R.id.textBackupInfo)
         buttonBackup = view.findViewById(R.id.buttonBackup)
         buttonRestore = view.findViewById(R.id.buttonRestore)
+        switchDarkMode = view.findViewById(R.id.switchDarkMode)
+        
+        // Initialize storage option radio buttons
+        radioGroupBackupStorage = view.findViewById(R.id.radioGroupBackupStorage)
+        radioInternalStorage = view.findViewById(R.id.radioInternalStorage)
+        radioExternalStorage = view.findViewById(R.id.radioExternalStorage)
+        
+        // Set default selection based on preference or use external by default
+        if (PrefsManager.getUseInternalStorageForBackup()) {
+            radioInternalStorage.isChecked = true
+        } else {
+            radioExternalStorage.isChecked = true
+        }
     }
     
     private fun setupCurrencySpinner() {
@@ -149,11 +170,26 @@ class SettingsFragment : Fragment() {
         }
         
         buttonBackup.setOnClickListener {
-            checkAndRequestStoragePermission()
+            if (radioExternalStorage.isChecked) {
+                checkAndRequestStoragePermission()
+            } else {
+                // Internal storage doesn't need permissions
+                createInternalBackup()
+            }
         }
         
         buttonRestore.setOnClickListener {
             openRestoreFilePicker()
+        }
+        
+        switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            applyDarkMode(isChecked)
+        }
+        
+        // Save the backup storage preference when changed
+        radioGroupBackupStorage.setOnCheckedChangeListener { _, checkedId ->
+            val useInternalStorage = checkedId == R.id.radioInternalStorage
+            PrefsManager.setUseInternalStorageForBackup(useInternalStorage)
         }
     }
     
@@ -173,6 +209,9 @@ class SettingsFragment : Fragment() {
         if (budget > 0) {
             editTextBudget.setText(budget.toString())
         }
+        
+        // Set dark mode switch based on saved preference
+        switchDarkMode.isChecked = com.example.financetracker.util.PrefsManager.getThemeMode()
         
         updateBudgetHint()
         updateBackupInfo()
@@ -277,128 +316,161 @@ class SettingsFragment : Fragment() {
     }
     
     private fun checkAndRequestStoragePermission() {
-        // For Android 11 (API 30) and higher
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            if (Environment.isExternalStorageManager()) {
-                createBackup()
-            } else {
-                showManageStoragePermissionDialog()
-            }
-        } 
-        // For Android 10 (API 29) and lower
-        else {
-            val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
-            if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
-                createBackup()
-            } else {
-                requestPermissions(arrayOf(permission), REQUEST_STORAGE_PERMISSION)
-            }
+        // For Android 10+ (Q), we can use the MediaStore API or scoped storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            createExternalBackup()
+            return
+        }
+        
+        // For older Android versions, check WRITE_EXTERNAL_STORAGE permission
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED) {
+            
+            // Request the permission
+            requestPermissions(
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_STORAGE_PERMISSION
+            )
+        } else {
+            // Permission already granted, proceed with backup
+            createExternalBackup()
         }
     }
     
-    private fun showManageStoragePermissionDialog() {
+    private fun createExternalBackup() {
+        try {
+            val backupFile = BackupUtil.createBackup(requireContext(), BackupUtil.BackupStorageType.EXTERNAL)
+            Snackbar.make(
+                requireView(),
+                "Backup saved to Downloads: ${backupFile.name}",
+                Snackbar.LENGTH_LONG
+            ).show()
+            updateBackupInfo()
+        } catch (e: Exception) {
+            Snackbar.make(
+                requireView(),
+                "Backup failed: ${e.message}",
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+    }
+    
+    private fun createInternalBackup() {
+        try {
+            val backupFile = BackupUtil.createBackup(requireContext(), BackupUtil.BackupStorageType.INTERNAL)
+            Snackbar.make(
+                requireView(),
+                "Backup saved to internal storage: ${backupFile.name}",
+                Snackbar.LENGTH_LONG
+            ).show()
+            updateBackupInfo()
+        } catch (e: Exception) {
+            Snackbar.make(
+                requireView(),
+                "Backup failed: ${e.message}",
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+    }
+    
+    private fun openRestoreFilePicker() {
+        // If internal storage is selected, use our custom picker dialog
+        if (radioInternalStorage.isChecked) {
+            showInternalStorageRestoreDialog()
+        } else {
+            // For external storage, use the system file picker
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+            }
+            startActivityForResult(intent, REQUEST_OPEN_DOCUMENT)
+        }
+    }
+    
+    /**
+     * Shows a dialog with a list of available internal storage backup files
+     */
+    private fun showInternalStorageRestoreDialog() {
+        // Get list of backup files from internal storage
+        val backupFolder = File(requireContext().filesDir, BackupUtil.INTERNAL_BACKUP_FOLDER)
+        
+        // Log path for debugging
+        val logTag = "SettingsFragment"
+        android.util.Log.d(logTag, "Looking for backups in: ${backupFolder.absolutePath}")
+        android.util.Log.d(logTag, "Folder exists: ${backupFolder.exists()}")
+        
+        if (!backupFolder.exists()) {
+            showMessage("No backup folder found. Please create a backup first.")
+            return
+        }
+        
+        val allFiles = backupFolder.listFiles()
+        android.util.Log.d(logTag, "Files found: ${allFiles?.size ?: 0}")
+        
+        if (allFiles == null || allFiles.isEmpty()) {
+            showMessage("No files found in backup folder")
+            return
+        }
+        
+        // Get all backup files and sort by date (newest first)
+        val backupFiles = allFiles.filter { 
+            val isBackup = (it.name.startsWith("FinanceTracker_backup_") || it.name.startsWith("backup_")) && 
+                    it.name.endsWith(".json")
+            android.util.Log.d(logTag, "File: ${it.name}, isBackup: $isBackup")
+            isBackup
+        }.sortedByDescending { it.lastModified() }
+        
+        if (backupFiles.isEmpty()) {
+            showMessage("No backup files found in the backup folder")
+            return
+        }
+        
+        // Create a list of backup file names with dates for the dialog
+        val backupDates = backupFiles.map { file ->
+            val date = Date(file.lastModified())
+            val formatter = SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault())
+            "${formatter.format(date)} (${file.name})"
+        }.toTypedArray()
+        
+        // Show dialog to select a backup file
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Storage Permission Required")
-            .setMessage("This app needs storage permission to save backups to your Downloads folder. Please grant the permission in the next screen.")
-            .setPositiveButton("Grant Permission") { _, _ ->
-                try {
-                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                    intent.data = Uri.parse("package:${requireContext().packageName}")
-                    startActivityForResult(intent, REQUEST_MANAGE_STORAGE)
-                } catch (e: Exception) {
-                    // Fallback if specific intent not available
-                    val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                    startActivityForResult(intent, REQUEST_MANAGE_STORAGE)
-                }
+            .setTitle("Select Backup to Restore")
+            .setItems(backupDates) { _, index ->
+                // User selected a backup file - confirm restore
+                val selectedFile = backupFiles[index]
+                
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Confirm Restore")
+                    .setMessage("Restore backup from ${backupDates[index]}? This will replace all current data.")
+                    .setPositiveButton("Restore") { _, _ -> 
+                        restoreFromFile(selectedFile)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
     
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (requestCode == REQUEST_STORAGE_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                createBackup()
-            } else {
-                showMessage("Storage permission is required to save backups")
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
-    }
-    
-    private fun createBackup() {
-        var backupFile: File? = null
-        var errorMessage: String? = null
-        
-        // Try the primary backup method first
+    /**
+     * Restores data from the provided backup file
+     */
+    private fun restoreFromFile(file: File) {
         try {
-            backupFile = BackupUtil.createBackup(requireContext())
+            val success = BackupUtil.restoreFromFile(requireContext(), file)
             
-            // Verify the file exists and has content
-            if (backupFile.exists() && backupFile.length() > 0) {
-                val path = if (BackupUtil.BACKUP_FOLDER.isEmpty()) {
-                    "Downloads/${backupFile.name}"
-                } else {
-                    "Downloads/${BackupUtil.BACKUP_FOLDER}/${backupFile.name}"
-                }
-                showMessage("Backup created: $path")
+            if (success) {
+                showMessage("Backup restored successfully")
                 updateBackupInfo()
-                return
+                loadSettings() // Reload settings after restore
             } else {
-                errorMessage = "File not created properly. Trying alternative method..."
-                android.util.Log.w("SettingsFragment", errorMessage)
+                showMessage("Failed to restore backup")
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            errorMessage = "Primary backup method failed: ${e.message}. Trying alternative method..."
-            android.util.Log.e("SettingsFragment", errorMessage, e)
+            showMessage("Error restoring backup: ${e.message}")
         }
-        
-        // If primary method failed, try the MediaStore method
-        try {
-            backupFile = BackupUtil.createBackupUsingMediaStore(requireContext())
-            val path = if (BackupUtil.BACKUP_FOLDER.isEmpty()) {
-                "Downloads/${backupFile.name}"
-            } else {
-                "Downloads/${BackupUtil.BACKUP_FOLDER}/${backupFile.name}"
-            }
-            showMessage("Backup created: $path")
-            updateBackupInfo()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            
-            // Both methods failed, show a detailed error
-            val finalError = when {
-                e.message?.contains("permission") == true -> 
-                    "Storage permission denied. Please grant storage permissions in your device settings."
-                
-                e.message?.contains("directory") == true -> 
-                    "Could not create the backup directory. Please check your device storage."
-                
-                else -> "Failed to create backup: ${e.message}"
-            }
-            
-            // Show error dialog with more details
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Backup Failed")
-                .setMessage("$finalError\n\nFirst attempt: $errorMessage\n\nSecond attempt: ${e.message}")
-                .setPositiveButton("OK", null)
-                .show()
-            
-            showMessage(finalError)
-            
-            // Log the error for debugging
-            android.util.Log.e("SettingsFragment", "Both backup methods failed", e)
-        }
-    }
-    
-    private fun openRestoreFilePicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "*/*"
-        }
-        startActivityForResult(intent, REQUEST_OPEN_DOCUMENT)
     }
     
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -439,7 +511,7 @@ class SettingsFragment : Fragment() {
             REQUEST_MANAGE_STORAGE -> {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                     if (Environment.isExternalStorageManager()) {
-                        createBackup()
+                        createExternalBackup()
                     } else {
                         showMessage("Storage permission is required to save backups")
                     }
@@ -451,5 +523,39 @@ class SettingsFragment : Fragment() {
     
     private fun showMessage(message: String) {
         Snackbar.make(requireView(), message, Snackbar.LENGTH_SHORT).show()
+    }
+    
+    private fun applyDarkMode(isDarkMode: Boolean) {
+        // Save the theme preference
+        com.example.financetracker.util.PrefsManager.setThemeMode(isDarkMode)
+        
+        // Apply the theme mode
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+    }
+    
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_STORAGE_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, proceed with backup
+                createExternalBackup()
+            } else {
+                // Permission denied, show a message
+                Snackbar.make(
+                    requireView(),
+                    "Storage permission is required to save backups to Downloads",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
     }
 } 

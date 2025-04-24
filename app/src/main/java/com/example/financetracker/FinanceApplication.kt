@@ -8,9 +8,11 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.financetracker.data.PrefsManager
 import com.example.financetracker.data.TxType
 import com.example.financetracker.notification.NotificationHelper
+import com.example.financetracker.util.PrefsManager as UtilPrefsManager
 
 class FinanceApplication : Application() {
     
@@ -24,6 +26,10 @@ class FinanceApplication : Application() {
         
         // Initialize PrefsManager
         PrefsManager.init(this)
+        UtilPrefsManager.init(this)
+        
+        // Apply theme mode
+        applyThemeMode()
         
         // Create notification channel
         createNotificationChannel()
@@ -32,6 +38,15 @@ class FinanceApplication : Application() {
         Handler(Looper.getMainLooper()).postDelayed({
             checkBudgetStatus()
         }, 3000) // 3 seconds delay
+    }
+    
+    private fun applyThemeMode() {
+        val isDarkMode = UtilPrefsManager.getThemeMode()
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
     }
     
     private fun checkBudgetStatus() {
@@ -44,14 +59,23 @@ class FinanceApplication : Application() {
             return
         }
         
+        // Calculate current month expenses only
         val transactions = PrefsManager.loadTransactions()
-        val totalExpenses = transactions
-            .filter { it.type == TxType.EXPENSE }
+        val currentMonth = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH)
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        
+        val monthlyExpenses = transactions
+            .filter { transaction -> 
+                val transactionCal = java.util.Calendar.getInstance().apply { timeInMillis = transaction.date }
+                transaction.type == TxType.EXPENSE &&
+                transactionCal.get(java.util.Calendar.MONTH) == currentMonth &&
+                transactionCal.get(java.util.Calendar.YEAR) == currentYear
+            }
             .sumOf { it.amount }
         
         // Check budget status for notification
-        Log.d(TAG, "Checking notification with expenses: $totalExpenses, budget: $budget (${totalExpenses/budget*100}%)")
-        NotificationHelper.checkBudgetStatus(this, totalExpenses, budget)
+        Log.d(TAG, "Checking notification with monthly expenses: $monthlyExpenses, budget: $budget (${monthlyExpenses/budget*100}%)")
+        NotificationHelper.checkBudgetStatus(this, monthlyExpenses, budget)
     }
     
     private fun createNotificationChannel() {

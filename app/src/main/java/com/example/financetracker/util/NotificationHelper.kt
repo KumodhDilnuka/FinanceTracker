@@ -31,7 +31,8 @@ object NotificationHelper {
         
         val percentage = (currentExpenses / budget) * 100
         
-        if (percentage >= 80) {
+        // Only show notification when budget is exceeded (100% or more)
+        if (currentExpenses > budget) {
             showBudgetAlertNotification(context, percentage.toInt(), budget, currentExpenses)
         }
     }

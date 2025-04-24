@@ -16,6 +16,9 @@ object PrefsManager {
     private const val KEY_CURRENCY = "currency"
     private const val KEY_CATEGORIES = "categories"
     private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
+    private const val KEY_THEME_MODE = "theme_mode"
+    private const val KEY_DARK_MODE = "dark_mode"
+    private const val KEY_USE_INTERNAL_STORAGE = "use_internal_storage"
     
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -55,6 +58,15 @@ object PrefsManager {
         return prefs.getString(KEY_CURRENCY, "") ?: ""
     }
     
+    // Theme mode methods
+    fun setThemeMode(isDarkMode: Boolean) {
+        prefs.edit().putBoolean(KEY_THEME_MODE, isDarkMode).apply()
+    }
+    
+    fun getThemeMode(): Boolean {
+        return prefs.getBoolean(KEY_THEME_MODE, false)
+    }
+    
     // Category methods to support data.PrefsManager
     fun saveCategories(categories: List<Category>) {
         val gson = Gson()
@@ -91,7 +103,23 @@ object PrefsManager {
             Category("Entertainment", com.example.financetracker.data.TxType.EXPENSE, "🎬"),
             Category("Housing", com.example.financetracker.data.TxType.EXPENSE, "🏠"),
             Category("Utilities", com.example.financetracker.data.TxType.EXPENSE, "💡"),
-            Category("Healthcare", com.example.financetracker.data.TxType.EXPENSE, "💊")
+            Category("Healthcare", com.example.financetracker.data.TxType.EXPENSE, "��")
         )
+    }
+    
+    /**
+     * Gets the preference for backup storage location
+     * @return true if internal storage should be used, false for external
+     */
+    fun getUseInternalStorageForBackup(): Boolean {
+        return prefs.getBoolean(KEY_USE_INTERNAL_STORAGE, false) // Default to external storage
+    }
+    
+    /**
+     * Sets the preference for backup storage location
+     * @param useInternal true for internal storage, false for external
+     */
+    fun setUseInternalStorageForBackup(useInternal: Boolean) {
+        prefs.edit().putBoolean(KEY_USE_INTERNAL_STORAGE, useInternal).apply()
     }
 } 

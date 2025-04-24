@@ -314,14 +314,25 @@ class AddEditTransactionActivity : AppCompatActivity() {
             // Skip if no budget is set
             if (budget <= 0) return
             
-            // Calculate total expenses
+            // Calculate current month expenses only
             val transactions = PrefsManager.loadTransactions()
-            val totalExpenses = transactions
-                .filter { it.type == TxType.EXPENSE }
+            val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+            
+            val monthlyExpenses = transactions
+                .filter { transaction -> 
+                    val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                    transaction.type == TxType.EXPENSE &&
+                    transactionCal.get(Calendar.MONTH) == currentMonth &&
+                    transactionCal.get(Calendar.YEAR) == currentYear
+                }
                 .sumOf { it.amount }
             
+            // Log to debug
+            android.util.Log.d("AddEditTransaction", "Monthly expenses for budget check: $monthlyExpenses / $budget")
+            
             // Check if budget is exceeded and send notification
-            NotificationHelper.checkBudgetStatus(this, totalExpenses, budget)
+            NotificationHelper.checkBudgetStatus(this, monthlyExpenses, budget)
         }
     }
 } 

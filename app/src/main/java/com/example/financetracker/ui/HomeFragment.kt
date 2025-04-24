@@ -396,13 +396,21 @@ class HomeFragment : Fragment() {
         // Update other UI that doesn't depend on time range
         updateBudgetUI()
         
-        // Check budget status
-        val totalExpenses = transactions
-            .filter { it.type == TxType.EXPENSE }
+        // Check budget status - only for current month expenses
+        val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        val monthlyExpenses = transactions
+            .filter { transaction -> 
+                val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                transaction.type == TxType.EXPENSE &&
+                transactionCal.get(Calendar.MONTH) == currentMonth &&
+                transactionCal.get(Calendar.YEAR) == currentYear
+            }
             .sumOf { it.amount }
         val budget = PrefsManager.getBudget()
         
-        NotificationHelper.checkBudgetStatus(requireContext(), totalExpenses, budget)
+        android.util.Log.d("HomeFragment", "Checking budget notification with monthly expenses only: $monthlyExpenses / $budget")
+        NotificationHelper.checkBudgetStatus(requireContext(), monthlyExpenses, budget)
     }
     
     private fun updateSummaryData(filteredTransactions: List<Transaction>) {
@@ -446,19 +454,20 @@ class HomeFragment : Fragment() {
             return
         }
         
-        // Calculate monthly expenses
+        // Calculate monthly expenses - only for current month
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
         val monthlyExpenses = transactions
-            .filter { 
-                it.type == TxType.EXPENSE &&
-                Calendar.getInstance().apply { timeInMillis = it.date }.get(Calendar.MONTH) == currentMonth &&
-                Calendar.getInstance().apply { timeInMillis = it.date }.get(Calendar.YEAR) == currentYear
+            .filter { transaction -> 
+                val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                transaction.type == TxType.EXPENSE &&
+                transactionCal.get(Calendar.MONTH) == currentMonth &&
+                transactionCal.get(Calendar.YEAR) == currentYear
             }
             .sumOf { it.amount }
         
         // Debug log to check values
-        android.util.Log.d("HomeFragment", "Budget: $budget, Monthly Expenses: $monthlyExpenses")
+        android.util.Log.d("HomeFragment", "Budget: $budget, Monthly Expenses (current month only): $monthlyExpenses")
         
         // Use formatCurrency with currency code
         val currency = PrefsManager.getCurrency()

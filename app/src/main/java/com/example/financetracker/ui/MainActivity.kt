@@ -7,10 +7,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.financetracker.R
+import com.example.financetracker.util.PrefsManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -32,6 +34,13 @@ class MainActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Initialize the PrefsManager
+        PrefsManager.init(applicationContext)
+        
+        // Apply the saved theme mode
+        applyThemeMode()
+        
         setContentView(R.layout.activity_main)
         
         // Set up navigation
@@ -45,6 +54,15 @@ class MainActivity : AppCompatActivity() {
         
         // Request notification permission for Android 13+
         requestNotificationPermission()
+    }
+    
+    private fun applyThemeMode() {
+        val isDarkMode = PrefsManager.getThemeMode()
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
     }
     
     private fun requestNotificationPermission() {

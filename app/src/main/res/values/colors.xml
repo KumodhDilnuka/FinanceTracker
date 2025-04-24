@@ -26,4 +26,11 @@
     <color name="colorSecondary">@color/secondary</color>
     <color name="colorAccent">@color/accent</color>
     <color name="colorBackground">@color/tertiary</color>
+    
+    <!-- Dark mode colors -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_text_primary">#E0E0E0</color>
+    <color name="dark_text_secondary">#B0B0B0</color>
+    <color name="dark_surface">#444444</color>
+    <color name="dark_card_background">#888888</color>
 </resources>

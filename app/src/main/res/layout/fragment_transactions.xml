@@ -5,28 +5,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
+    android:background="?android:colorBackground"
     tools:context=".ui.TransactionsFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorBackground"
+        android:background="?android:colorBackground"
         app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorBackground">
+            android:background="?android:colorBackground">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Transactions"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </androidx.appcompat.widget.Toolbar>
@@ -54,7 +54,7 @@
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp"
-                app:cardBackgroundColor="#F1EEFF">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:id="@+id/timeFilterTabContainer"
@@ -69,8 +69,8 @@
                         android:layout_height="wrap_content"
                         android:text="This Month"
                         android:textSize="14sp"
-                        android:textColor="@color/white"
-                        app:backgroundTint="@color/primary"
+                        android:textColor="?attr/colorOnPrimary"
+                        app:backgroundTint="?attr/colorPrimary"
                         android:paddingVertical="4dp"
                         android:paddingHorizontal="12dp"
                         android:minHeight="36dp"
@@ -85,8 +85,8 @@
                         android:layout_height="wrap_content"
                         android:text="This Year"
                         android:textSize="14sp"
-                        android:textColor="@color/black"
-                        app:backgroundTint="#F1EEFF"
+                        android:textColor="?android:textColorSecondary"
+                        app:backgroundTint="?attr/colorSurface"
                         android:paddingVertical="4dp"
                         android:paddingHorizontal="12dp"
                         android:minHeight="36dp"
@@ -101,8 +101,8 @@
                         android:layout_height="wrap_content"
                         android:text="All Time"
                         android:textSize="14sp"
-                        android:textColor="@color/black"
-                        app:backgroundTint="#F1EEFF"
+                        android:textColor="?android:textColorSecondary"
+                        app:backgroundTint="?attr/colorSurface"
                         android:paddingVertical="4dp"
                         android:paddingHorizontal="12dp"
                         android:minHeight="36dp"
@@ -131,7 +131,7 @@
             android:layout_height="wrap_content"
             android:text="No transactions yet.\nTap + to add a new transaction"
             android:textAlignment="center"
-            android:textColor="@color/primary"
+            android:textColor="?attr/colorPrimary"
             android:textSize="16sp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -148,8 +148,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="Add Transaction"
-        android:backgroundTint="@color/primary"
-        app:tint="@color/white"
+        android:backgroundTint="?attr/colorPrimary"
+        app:tint="?attr/colorOnPrimary"
         app:borderWidth="0dp"
         app:srcCompat="@drawable/ic_add" />
 

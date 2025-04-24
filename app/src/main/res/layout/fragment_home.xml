@@ -5,28 +5,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
+    android:background="?android:colorBackground"
     tools:context=".ui.HomeFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorBackground"
+        android:background="?android:colorBackground"
         app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorBackground">
+            android:background="?android:colorBackground">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Trezo"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </androidx.appcompat.widget.Toolbar>
@@ -57,7 +57,7 @@
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
-                    app:cardBackgroundColor="#F1EEFF">
+                    app:cardBackgroundColor="?attr/colorSurface">
 
                     <LinearLayout
                         android:id="@+id/timeFilterTabContainer"
@@ -72,8 +72,8 @@
                             android:layout_height="wrap_content"
                             android:text="This Month"
                             android:textSize="14sp"
-                            android:textColor="@color/white"
-                            app:backgroundTint="@color/primary"
+                            android:textColor="?attr/colorOnPrimary"
+                            app:backgroundTint="?attr/colorPrimary"
                             android:paddingVertical="4dp"
                             android:paddingHorizontal="12dp"
                             android:minHeight="36dp"
@@ -88,8 +88,8 @@
                             android:layout_height="wrap_content"
                             android:text="This Year"
                             android:textSize="14sp"
-                            android:textColor="@color/black"
-                            app:backgroundTint="#F1EEFF"
+                            android:textColor="?android:textColorSecondary"
+                            app:backgroundTint="?attr/colorSurface"
                             android:paddingVertical="4dp"
                             android:paddingHorizontal="12dp"
                             android:minHeight="36dp"
@@ -104,8 +104,8 @@
                             android:layout_height="wrap_content"
                             android:text="All Time"
                             android:textSize="14sp"
-                            android:textColor="@color/black"
-                            app:backgroundTint="#F1EEFF"
+                            android:textColor="?android:textColorSecondary"
+                            app:backgroundTint="?attr/colorSurface"
                             android:paddingVertical="4dp"
                             android:paddingHorizontal="12dp"
                             android:minHeight="36dp"
@@ -125,7 +125,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/primary">
+                app:cardBackgroundColor="?attr/colorPrimary">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -137,7 +137,7 @@
                         android:id="@+id/textBalanceDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/white"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="14sp"
                         android:alpha="0.7"
                         tools:text="As of April 24, 2025" />
@@ -146,7 +146,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Current Balance"
-                        android:textColor="@color/white"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
                         android:alpha="0.9" />
@@ -158,14 +158,14 @@
                         android:layout_marginTop="8dp"
                         android:textSize="36sp"
                         android:textStyle="bold"
-                        android:textColor="@color/white"
+                        android:textColor="?attr/colorOnPrimary"
                         tools:text="$1,250.00" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="16dp"
-                        android:background="@color/white"
+                        android:background="?attr/colorOnPrimary"
                         android:alpha="0.2" />
 
                     <LinearLayout
@@ -184,7 +184,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Income"
                                 android:textSize="14sp"
-                                android:textColor="@color/white"
+                                android:textColor="?attr/colorOnPrimary"
                                 android:alpha="0.8" />
 
                             <TextView
@@ -193,7 +193,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/white"
+                                android:textColor="?attr/colorOnPrimary"
                                 tools:text="$2,450.00" />
                         </LinearLayout>
 
@@ -208,7 +208,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Expenses"
                                 android:textSize="14sp"
-                                android:textColor="@color/white"
+                                android:textColor="?attr/colorOnPrimary"
                                 android:alpha="0.8" />
 
                             <TextView
@@ -217,7 +217,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/white"
+                                android:textColor="?attr/colorOnPrimary"
                                 tools:text="$1,200.00" />
                         </LinearLayout>
                     </LinearLayout>
@@ -231,7 +231,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -243,7 +243,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Monthly Budget"
-                        android:textColor="@color/primary"
+                        android:textColor="?android:textColorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -258,7 +258,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:textColor="@color/secondary"
+                            android:textColor="?android:textColorSecondary"
                             android:textSize="14sp"
                             tools:text="$1,200 / $2,000" />
 
@@ -266,7 +266,7 @@
                             android:id="@+id/textBudgetPercentage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/primary"
+                            android:textColor="?android:textColorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             tools:text="60%" />
@@ -291,7 +291,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -303,7 +303,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Spending by Category"
-                        android:textColor="@color/primary"
+                        android:textColor="?android:textColorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -323,7 +323,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -335,7 +335,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Expense by Category"
-                        android:textColor="@color/primary"
+                        android:textColor="?android:textColorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -355,7 +355,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -367,7 +367,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Income by Category"
-                        android:textColor="@color/primary"
+                        android:textColor="?android:textColorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -387,7 +387,7 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -406,7 +406,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Recent Transactions"
-                            android:textColor="@color/primary"
+                            android:textColor="?android:textColorPrimary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
@@ -415,7 +415,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="See All"
-                            android:textColor="@color/secondary"
+                            android:textColor="?android:textColorSecondary"
                             android:textSize="14sp"
                             android:padding="8dp" />
                     </LinearLayout>
@@ -434,7 +434,7 @@
                         android:layout_marginTop="16dp"
                         android:gravity="center"
                         android:text="No transactions yet"
-                        android:textColor="@color/secondary"
+                        android:textColor="?android:textColorSecondary"
                         android:visibility="gone" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -448,8 +448,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="Add Transaction"
-        android:backgroundTint="@color/primary"
-        app:tint="@color/white"
+        android:backgroundTint="?attr/colorPrimary"
+        app:tint="?attr/colorOnPrimary"
         app:borderWidth="0dp"
         app:srcCompat="@drawable/ic_add" />
 

@@ -19,6 +19,12 @@ import java.util.*
 object BackupUtil {
 
     const val BACKUP_FOLDER = ""  // Save directly to Downloads
+    const val INTERNAL_BACKUP_FOLDER = "backups"  // Folder name for internal storage
+    
+    enum class BackupStorageType {
+        INTERNAL,  // App's internal storage
+        EXTERNAL   // Downloads folder
+    }
     
     data class BackupData(
         val categories: List<Category>,
@@ -29,16 +35,78 @@ object BackupUtil {
     )
     
     /**
-     * Creates a backup file in the Downloads folder
+     * Creates a backup file in the selected storage type (Downloads or Internal)
      */
-    fun createBackup(context: Context): File {
+    fun createBackup(context: Context, storageType: BackupStorageType = BackupStorageType.EXTERNAL): File {
+        return if (storageType == BackupStorageType.INTERNAL) {
+            createInternalBackup(context)
+        } else {
+            createExternalBackup(context)
+        }
+    }
+    
+    /**
+     * Creates a backup file in the app's internal storage
+     */
+    private fun createInternalBackup(context: Context): File {
         try {
             val transactions = PrefsManager.loadTransactions()
+            val categories = PrefsManager.loadCategories()
             val budget = PrefsManager.getBudget()
             val currency = PrefsManager.getCurrency()
             
             val backupData = mapOf(
                 "transactions" to transactions,
+                "categories" to categories,
+                "budget" to budget,
+                "currency" to currency
+            )
+            
+            val json = Gson().toJson(backupData)
+            
+            // Create the internal backups directory if it doesn't exist
+            val backupFolder = File(context.filesDir, INTERNAL_BACKUP_FOLDER)
+            if (!backupFolder.exists()) {
+                val created = backupFolder.mkdirs()
+                if (!created) {
+                    throw IOException("Failed to create directory: ${backupFolder.absolutePath}")
+                }
+            }
+            
+            // Create a backup file with timestamp
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                .format(Date())
+            val backupFileName = "FinanceTracker_backup_$timestamp.json"
+            val backupFile = File(backupFolder, backupFileName)
+            
+            // Write data to the file using FileOutputStream
+            FileOutputStream(backupFile).use { stream ->
+                stream.write(json.toByteArray())
+            }
+            
+            // Log success
+            android.util.Log.d("BackupUtil", "Internal backup created successfully at: ${backupFile.absolutePath}")
+            
+            return backupFile
+        } catch (e: Exception) {
+            android.util.Log.e("BackupUtil", "Internal backup creation failed: ${e.message}", e)
+            throw e
+        }
+    }
+    
+    /**
+     * Creates a backup file in the Downloads folder (External storage)
+     */
+    private fun createExternalBackup(context: Context): File {
+        try {
+            val transactions = PrefsManager.loadTransactions()
+            val categories = PrefsManager.loadCategories()
+            val budget = PrefsManager.getBudget()
+            val currency = PrefsManager.getCurrency()
+            
+            val backupData = mapOf(
+                "transactions" to transactions,
+                "categories" to categories,
                 "budget" to budget,
                 "currency" to currency
             )
@@ -74,7 +142,7 @@ object BackupUtil {
                 }
                 
                 // Log success
-                android.util.Log.d("BackupUtil", "Backup created successfully at: ${backupFile.absolutePath}")
+                android.util.Log.d("BackupUtil", "External backup created successfully at: ${backupFile.absolutePath}")
                 
                 return backupFile
             } catch (e: Exception) {
@@ -82,7 +150,7 @@ object BackupUtil {
                 throw e
             }
         } catch (e: Exception) {
-            android.util.Log.e("BackupUtil", "Backup creation failed: ${e.message}", e)
+            android.util.Log.e("BackupUtil", "External backup creation failed: ${e.message}", e)
             throw e
         }
     }
@@ -104,12 +172,23 @@ object BackupUtil {
             val transactionsType: Type = object : TypeToken<List<Transaction>>() {}.type
             val transactions: List<Transaction> = gson.fromJson(transactionsJson, transactionsType)
             
+            // Extract categories if available
+            val categoriesJson = gson.toJson(backupData["categories"])
+            val categoriesType: Type = object : TypeToken<List<Category>>() {}.type
+            val categories: List<Category> = try {
+                gson.fromJson(categoriesJson, categoriesType)
+            } catch (e: Exception) {
+                // If categories not found, use existing ones
+                PrefsManager.loadCategories()
+            }
+            
             // Extract budget and currency
             val budget = (backupData["budget"] as? Double) ?: 0.0
             val currency = backupData["currency"] as? String ?: "USD"
             
             // Save restored data
             PrefsManager.saveTransactions(transactions)
+            PrefsManager.saveCategories(categories)
             PrefsManager.setBudget(budget)
             PrefsManager.setCurrency(currency)
             
@@ -128,8 +207,8 @@ object BackupUtil {
         val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val downloadsBackupFolder = File(downloadsDir, BACKUP_FOLDER)
         
-        // Also check internal storage for backward compatibility
-        val internalBackupFolder = File(context.filesDir, "backups")
+        // Also check internal storage 
+        val internalBackupFolder = File(context.filesDir, INTERNAL_BACKUP_FOLDER)
         
         // Check both folders
         val folders = listOf(downloadsBackupFolder, internalBackupFolder)
@@ -140,7 +219,10 @@ object BackupUtil {
         for (folder in folders) {
             if (folder.exists()) {
                 folder.listFiles()?.let { files ->
-                    allBackupFiles.addAll(files.filter { it.name.startsWith("backup_") && it.name.endsWith(".json") })
+                    allBackupFiles.addAll(files.filter { 
+                        (it.name.startsWith("FinanceTracker_backup_") || it.name.startsWith("backup_")) && 
+                        it.name.endsWith(".json") 
+                    })
                 }
             }
         }
@@ -157,7 +239,14 @@ object BackupUtil {
         val dateFormat = SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault())
         val formattedDate = dateFormat.format(lastModified)
         
-        return "Last backup: $formattedDate (${mostRecentBackup.parentFile?.name})"
+        // Indicate storage location
+        val storageType = if (mostRecentBackup.absolutePath.contains(context.filesDir.absolutePath)) {
+            "Internal Storage"
+        } else {
+            "External Storage"
+        }
+        
+        return "Last backup: $formattedDate ($storageType)"
     }
     
     /**
