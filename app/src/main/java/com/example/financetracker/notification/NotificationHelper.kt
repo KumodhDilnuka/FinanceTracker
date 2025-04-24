@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.financetracker.FinanceApplication
 import com.example.financetracker.R
+import com.example.financetracker.data.PrefsManager
 import com.example.financetracker.ui.MainActivity
 
 object NotificationHelper {
@@ -29,10 +30,16 @@ object NotificationHelper {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         
+        val currency = PrefsManager.getCurrency()
+        val budget = PrefsManager.getBudget()
+        val spent = (budget * spentPercentage / 100)
+        val message = "You've used $spentPercentage% of your monthly budget " +
+                      "(${formatAmount(spent, currency)} of ${formatAmount(budget, currency)})"
+        
         val builder = NotificationCompat.Builder(context, FinanceApplication.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_warning)
             .setContentTitle("Budget Alert")
-            .setContentText("You've used $spentPercentage% of your monthly budget")
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -40,12 +47,12 @@ object NotificationHelper {
         try {
             if (checkNotificationPermission(context)) {
                 NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_BUDGET_APPROACH, builder.build())
-                Log.d(TAG, "Budget approach notification sent")
+                Log.d(TAG, "Budget approach notification sent: $message")
             } else {
                 Log.d(TAG, "Missing notification permission")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error sending notification: ${e.message}")
+            Log.e(TAG, "Error sending notification: ${e.message}", e)
         }
     }
     
@@ -58,10 +65,20 @@ object NotificationHelper {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         
+        val currency = PrefsManager.getCurrency()
+        val budget = PrefsManager.getBudget()
+        val spent = PrefsManager.loadTransactions()
+            .filter { it.type == com.example.financetracker.data.TxType.EXPENSE }
+            .sumOf { it.amount }
+        
+        val message = "You have exceeded your monthly budget by " +
+                      "${formatAmount(spent - budget, currency)}! " +
+                      "(${formatAmount(spent, currency)} of ${formatAmount(budget, currency)})"
+        
         val builder = NotificationCompat.Builder(context, FinanceApplication.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_warning)
             .setContentTitle("Budget Exceeded")
-            .setContentText("You have exceeded your monthly budget!")
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -69,12 +86,22 @@ object NotificationHelper {
         try {
             if (checkNotificationPermission(context)) {
                 NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_BUDGET_EXCEEDED, builder.build())
-                Log.d(TAG, "Budget exceeded notification sent")
+                Log.d(TAG, "Budget exceeded notification sent: $message")
             } else {
                 Log.d(TAG, "Missing notification permission")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error sending notification: ${e.message}")
+            Log.e(TAG, "Error sending notification: ${e.message}", e)
+        }
+    }
+    
+    private fun formatAmount(amount: Double, currency: String): String {
+        return when (currency) {
+            "USD" -> "$${String.format("%.2f", amount)}"
+            "LKR" -> "Rs. ${String.format("%.2f", amount)}"
+            "EUR" -> "€${String.format("%.2f", amount)}"
+            "GBP" -> "£${String.format("%.2f", amount)}"
+            else -> "$currency ${String.format("%.2f", amount)}"
         }
     }
     
@@ -90,13 +117,28 @@ object NotificationHelper {
     }
     
     fun checkBudgetStatus(context: Context, spent: Double, budget: Double) {
-        if (budget <= 0) return
+        if (budget <= 0) {
+            Log.d(TAG, "Skipping budget check because no budget is set")
+            return
+        }
         
+        Log.d(TAG, "Checking budget: spent=$spent, budget=$budget")
         val percentage = ((spent / budget) * 100).toInt()
         
         when {
-            spent > budget -> notifyBudgetExceeded(context)
-            percentage >= 90 -> notifyApproachingBudget(context, percentage)
+            // If over budget, show the exceeded notification
+            spent > budget -> {
+                Log.d(TAG, "Budget EXCEEDED! ($percentage% spent)")
+                notifyBudgetExceeded(context)
+            }
+            // If approaching budget (90% or more), show the approaching notification
+            percentage >= 90 -> {
+                Log.d(TAG, "Budget approaching limit ($percentage% spent)")
+                notifyApproachingBudget(context, percentage)
+            }
+            else -> {
+                Log.d(TAG, "Budget is fine ($percentage% spent)")
+            }
         }
     }
 } 

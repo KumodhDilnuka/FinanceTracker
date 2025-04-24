@@ -41,7 +41,7 @@ object NotificationHelper {
         val formattedBudget = CurrencyFormatter.formatCurrency(budget, currency)
         val formattedExpense = CurrencyFormatter.formatCurrency(currentExpense, currency)
         
-        val title = "Budget Alert"
+        val title = "Monthly Budget Alert"
         val message = "You've used $percentage% of your monthly budget ($formattedExpense of $formattedBudget)"
         
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)

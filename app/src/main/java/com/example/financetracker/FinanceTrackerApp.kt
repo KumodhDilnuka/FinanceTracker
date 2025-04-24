@@ -17,6 +17,12 @@ class FinanceTrackerApp : Application() {
         // but we're calling it explicitly to be safe)
         UtilPrefsManager.init(this)
         
+        // Only set LKR as the default currency if no currency has been set at all
+        val currentCurrency = UtilPrefsManager.getCurrency()
+        if (currentCurrency.isEmpty()) {
+            UtilPrefsManager.setCurrency("LKR")
+        }
+        
         // Create notification channel for budget alerts
         NotificationHelper.createNotificationChannel(this)
     }

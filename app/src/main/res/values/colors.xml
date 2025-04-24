@@ -7,5 +7,20 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="colorPrimary">@color/purple_500</color>
+    
+    <!-- New app color scheme -->
+    <color name="primary">#493D9E</color>
+    <color name="secondary">#B2A5FF</color>
+    <color name="tertiary">#DAD2FF</color>
+    <color name="accent">#FFF2AF</color>
+    <color name="card_background">#F1EFEC</color>
+    
+    <!-- Transaction type colors -->
+    <color name="income_green">#4CAF50</color>
+    <color name="expense_red">#F44336</color>
+    
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorSecondary">@color/secondary</color>
+    <color name="colorAccent">@color/accent</color>
+    <color name="colorBackground">@color/tertiary</color>
 </resources>

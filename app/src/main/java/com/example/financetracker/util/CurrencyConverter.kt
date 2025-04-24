@@ -13,7 +13,7 @@ object CurrencyConverter {
     }
     
     fun getAvailableCurrencies(): List<String> {
-        return listOf("USD", "EUR", "GBP", "JPY", "CAD", "AUD")
+        return listOf("USD", "EUR", "GBP", "JPY", "CAD", "AUD", "LKR")
     }
     
     fun getConversionFactor(fromCurrency: String, toCurrency: String): Double {
@@ -25,7 +25,8 @@ object CurrencyConverter {
             "GBP" to 0.75,
             "JPY" to 110.0,
             "CAD" to 1.25,
-            "AUD" to 1.35
+            "AUD" to 1.35,
+            "LKR" to 320.0  // Approximate exchange rate for Sri Lankan Rupee
         )
         
         val fromRate = mockRates[fromCurrency] ?: 1.0

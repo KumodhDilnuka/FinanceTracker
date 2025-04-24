@@ -1,6 +1,7 @@
 package com.example.financetracker.util
 
 import android.content.Context
+import android.os.Environment
 import com.example.financetracker.data.Category
 import com.example.financetracker.data.PrefsManager
 import com.example.financetracker.model.Transaction
@@ -10,13 +11,14 @@ import com.google.gson.reflect.TypeToken
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.lang.reflect.Type
 import java.text.SimpleDateFormat
 import java.util.*
 
 object BackupUtil {
 
-    private const val BACKUP_FOLDER = "backups"
+    const val BACKUP_FOLDER = ""  // Save directly to Downloads
     
     data class BackupData(
         val categories: List<Category>,
@@ -27,36 +29,62 @@ object BackupUtil {
     )
     
     /**
-     * Creates a backup file in the app's internal storage
+     * Creates a backup file in the Downloads folder
      */
     fun createBackup(context: Context): File {
-        val transactions = PrefsManager.loadTransactions()
-        val budget = PrefsManager.getBudget()
-        val currency = PrefsManager.getCurrency()
-        
-        val backupData = mapOf(
-            "transactions" to transactions,
-            "budget" to budget,
-            "currency" to currency
-        )
-        
-        val json = Gson().toJson(backupData)
-        
-        // Create backup folder if it doesn't exist
-        val backupFolder = File(context.filesDir, BACKUP_FOLDER)
-        if (!backupFolder.exists()) {
-            backupFolder.mkdirs()
+        try {
+            val transactions = PrefsManager.loadTransactions()
+            val budget = PrefsManager.getBudget()
+            val currency = PrefsManager.getCurrency()
+            
+            val backupData = mapOf(
+                "transactions" to transactions,
+                "budget" to budget,
+                "currency" to currency
+            )
+            
+            val json = Gson().toJson(backupData)
+            
+            // Create a backup folder in Downloads if it doesn't exist
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val backupFolder = File(downloadsDir, BACKUP_FOLDER)
+            if (!backupFolder.exists()) {
+                val created = backupFolder.mkdirs()
+                if (!created) {
+                    throw IOException("Failed to create directory: ${backupFolder.absolutePath}")
+                }
+            }
+            
+            // Create a backup file with timestamp
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                .format(Date())
+            val backupFileName = "FinanceTracker_backup_$timestamp.json"
+            val backupFile = File(backupFolder, backupFileName)
+            
+            // Write data to the file using Java's FileWriter for better compatibility
+            try {
+                val writer = java.io.FileWriter(backupFile)
+                writer.write(json)
+                writer.flush()
+                writer.close()
+                
+                // Verify the file was created
+                if (!backupFile.exists() || backupFile.length() == 0L) {
+                    throw IOException("File was not created or is empty")
+                }
+                
+                // Log success
+                android.util.Log.d("BackupUtil", "Backup created successfully at: ${backupFile.absolutePath}")
+                
+                return backupFile
+            } catch (e: Exception) {
+                android.util.Log.e("BackupUtil", "Error writing to file: ${e.message}", e)
+                throw e
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("BackupUtil", "Backup creation failed: ${e.message}", e)
+            throw e
         }
-        
-        // Create a backup file with timestamp
-        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-            .format(Date())
-        val backupFile = File(backupFolder, "backup_$timestamp.json")
-        
-        // Write data to the file
-        backupFile.writeText(json)
-        
-        return backupFile
     }
     
     /**
@@ -96,20 +124,107 @@ object BackupUtil {
      * Gets backup file info if it exists
      */
     fun getBackupInfo(context: Context): String? {
-        val backupFolder = File(context.filesDir, BACKUP_FOLDER)
-        if (!backupFolder.exists() || backupFolder.listFiles()?.isEmpty() == true) {
+        // Check the Downloads folder first
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val downloadsBackupFolder = File(downloadsDir, BACKUP_FOLDER)
+        
+        // Also check internal storage for backward compatibility
+        val internalBackupFolder = File(context.filesDir, "backups")
+        
+        // Check both folders
+        val folders = listOf(downloadsBackupFolder, internalBackupFolder)
+        
+        // Get all backup files from both locations
+        val allBackupFiles = mutableListOf<File>()
+        
+        for (folder in folders) {
+            if (folder.exists()) {
+                folder.listFiles()?.let { files ->
+                    allBackupFiles.addAll(files.filter { it.name.startsWith("backup_") && it.name.endsWith(".json") })
+                }
+            }
+        }
+        
+        if (allBackupFiles.isEmpty()) {
             return null
         }
         
         // Get the most recent backup
-        val backupFiles = backupFolder.listFiles()?.sortedByDescending { it.lastModified() }
-        val mostRecentBackup = backupFiles?.firstOrNull() ?: return null
+        val mostRecentBackup = allBackupFiles.maxByOrNull { it.lastModified() } ?: return null
         
         // Format the last modified date
         val lastModified = Date(mostRecentBackup.lastModified())
         val dateFormat = SimpleDateFormat("MMMM dd, yyyy HH:mm", Locale.getDefault())
         val formattedDate = dateFormat.format(lastModified)
         
-        return "Last backup: $formattedDate"
+        return "Last backup: $formattedDate (${mostRecentBackup.parentFile?.name})"
+    }
+    
+    /**
+     * Alternative method to create a backup file using MediaStore API (for Android 10+)
+     * This is used as a fallback when direct file access fails
+     */
+    fun createBackupUsingMediaStore(context: Context): File {
+        try {
+            val transactions = PrefsManager.loadTransactions()
+            val budget = PrefsManager.getBudget()
+            val currency = PrefsManager.getCurrency()
+            
+            val backupData = mapOf(
+                "transactions" to transactions,
+                "budget" to budget,
+                "currency" to currency
+            )
+            
+            val json = Gson().toJson(backupData)
+            
+            // Create a temporary file first
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                .format(Date())
+            val backupFileName = "FinanceTracker_backup_$timestamp.json"
+            val tempFile = File(context.cacheDir, backupFileName)
+            
+            // Write data to the temporary file
+            tempFile.writeText(json)
+            
+            // Now copy this file to Downloads using ContentResolver
+            val contentValues = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, backupFileName)
+                put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/json")
+                
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "${android.os.Environment.DIRECTORY_DOWNLOADS}/$BACKUP_FOLDER")
+                }
+            }
+            
+            val contentResolver = context.contentResolver
+            val uri = contentResolver.insert(
+                android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                contentValues
+            ) ?: throw IOException("Failed to create new MediaStore record")
+            
+            // Copy content to the new file
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                tempFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            } ?: throw IOException("Failed to open output stream")
+            
+            // Delete temporary file
+            tempFile.delete()
+            
+            // Return the original file object with the correct path 
+            // (we can't access the actual file directly, but we need to return something)
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val backupFolder = File(downloadsDir, BACKUP_FOLDER)
+            val backupFile = File(backupFolder, backupFileName)
+            
+            android.util.Log.d("BackupUtil", "Backup created using MediaStore at: ${downloadsDir.absolutePath}/$BACKUP_FOLDER/$backupFileName")
+            
+            return backupFile
+        } catch (e: Exception) {
+            android.util.Log.e("BackupUtil", "MediaStore backup failed: ${e.message}", e)
+            throw e
+        }
     }
 } 

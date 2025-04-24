@@ -130,7 +130,7 @@ class HomeFragment : Fragment() {
         
         val entries = ArrayList<PieEntry>()
         val colors = ArrayList<Int>()
-        val colorScheme = getColorScheme(categories.size)
+        val colorScheme = getExpenseColorScheme(categories.size)
         
         // Create entries for each category
         for (i in categories.indices) {
@@ -192,35 +192,61 @@ class HomeFragment : Fragment() {
     }
     
     // Get a color scheme for expense categories
-    private fun getColorScheme(size: Int): List<Int> {
-        return listOf(
-            Color.rgb(244, 67, 54),   // Red
-            Color.rgb(255, 152, 0),   // Orange
-            Color.rgb(255, 193, 7),   // Amber
-            Color.rgb(76, 175, 80),   // Green
-            Color.rgb(0, 150, 136),   // Teal
-            Color.rgb(33, 150, 243),  // Blue
-            Color.rgb(156, 39, 176),  // Purple
-            Color.rgb(233, 30, 99),   // Pink
-            Color.rgb(158, 158, 158), // Grey
-            Color.rgb(96, 125, 139)   // Blue Grey
-        )
+    private fun getExpenseColorScheme(size: Int): List<Int> {
+        val baseColor = resources.getColor(R.color.expense_red, null)
+        val baseColorInt = baseColor
+        
+        // Create variations of the base color
+        val colorList = mutableListOf<Int>()
+        colorList.add(baseColorInt)
+        
+        // Add darker and lighter variations
+        val hsv = FloatArray(3)
+        Color.colorToHSV(baseColorInt, hsv)
+        
+        for (i in 1 until size) {
+            // Alternate between lighter and darker
+            if (i % 2 == 0) {
+                hsv[1] = Math.max(0f, hsv[1] - 0.1f * (i / 2)) // Reduce saturation
+                hsv[2] = Math.min(1f, hsv[2] + 0.1f * (i / 2)) // Increase brightness
+            } else {
+                hsv[1] = Math.min(1f, hsv[1] + 0.1f * ((i + 1) / 2)) // Increase saturation
+                hsv[2] = Math.max(0f, hsv[2] - 0.1f * ((i + 1) / 2)) // Reduce brightness
+            }
+            
+            colorList.add(Color.HSVToColor(hsv))
+        }
+        
+        return colorList
     }
     
     // Get a color scheme for income categories with greener tones
     private fun getIncomeColorScheme(size: Int): List<Int> {
-        return listOf(
-            Color.rgb(76, 175, 80),   // Light Green
-            Color.rgb(56, 142, 60),   // Medium Green
-            Color.rgb(27, 94, 32),    // Dark Green
-            Color.rgb(129, 199, 132), // Pale Green
-            Color.rgb(165, 214, 167), // Very Pale Green
-            Color.rgb(0, 150, 136),   // Teal
-            Color.rgb(0, 121, 107),   // Dark Teal
-            Color.rgb(0, 188, 212),   // Cyan
-            Color.rgb(3, 155, 229),   // Light Blue
-            Color.rgb(0, 96, 100)     // Very Dark Teal
-        )
+        val baseColor = resources.getColor(R.color.income_green, null)
+        val baseColorInt = baseColor
+        
+        // Create variations of the base color
+        val colorList = mutableListOf<Int>()
+        colorList.add(baseColorInt)
+        
+        // Add darker and lighter variations
+        val hsv = FloatArray(3)
+        Color.colorToHSV(baseColorInt, hsv)
+        
+        for (i in 1 until size) {
+            // Alternate between lighter and darker
+            if (i % 2 == 0) {
+                hsv[1] = Math.max(0f, hsv[1] - 0.1f * (i / 2)) // Reduce saturation
+                hsv[2] = Math.min(1f, hsv[2] + 0.1f * (i / 2)) // Increase brightness
+            } else {
+                hsv[1] = Math.min(1f, hsv[1] + 0.1f * ((i + 1) / 2)) // Increase saturation
+                hsv[2] = Math.max(0f, hsv[2] - 0.1f * ((i + 1) / 2)) // Reduce brightness
+            }
+            
+            colorList.add(Color.HSVToColor(hsv))
+        }
+        
+        return colorList
     }
 
     private fun setupRecyclerViews() {
@@ -280,7 +306,8 @@ class HomeFragment : Fragment() {
             
             val categoryItems = categories.map { category ->
                 val percentage = if (totalExpense > 0) ((category.amount / totalExpense) * 100).toInt() else 0
-                CategorySpendingItem(category.name, category.amount, percentage, currency)
+                // Use the emoji from CategoryWithAmount
+                CategorySpendingItem(category.name, category.emoji, category.amount, percentage, currency)
             }
             
             categoryAdapter.submitList(categoryItems)
@@ -325,14 +352,14 @@ class HomeFragment : Fragment() {
             .sumOf { it.amount }
             
         if (budget <= 0) {
-            textBudgetInfo.text = "No budget set"
+            textBudgetInfo.text = "No monthly budget set"
             textBudgetPercentage.text = "N/A"
             progressBudget.progress = 0
             return
         }
         
         val percentage = ((totalExpense / budget) * 100).toInt()
-        textBudgetInfo.text = "${CurrencyFormatter.formatCurrency(totalExpense, currency)} / ${CurrencyFormatter.formatCurrency(budget, currency)}"
+        textBudgetInfo.text = "${CurrencyFormatter.formatCurrency(totalExpense, currency)} / ${CurrencyFormatter.formatCurrency(budget, currency)} (Monthly)"
         textBudgetPercentage.text = "$percentage%"
         progressBudget.progress = percentage.coerceAtMost(100)
     }
@@ -361,20 +388,32 @@ class HomeFragment : Fragment() {
             .filter { it.type == TxType.EXPENSE }
             .groupBy { it.category }
             .mapValues { it.value.sumOf { tx -> tx.amount } }
-            .map { CategoryWithAmount(it.key, it.value) }
-            .sortedByDescending { it.amount }
+            .toList()
+            .sortedByDescending { it.second }
         
-        updateExpensePieChart(expensesByCategory)
+        val categories = PrefsManager.loadCategories()
+        
+        val expenseCategoriesWithAmount = expensesByCategory.map { (categoryName, amount) ->
+            val emoji = categories.find { it.name == categoryName }?.emoji ?: ""
+            CategoryWithAmount(categoryName, amount, emoji)
+        }
+        
+        updateExpensePieChart(expenseCategoriesWithAmount)
         
         // Update income pie chart
         val incomeByCategory = transactions
             .filter { it.type == TxType.INCOME }
             .groupBy { it.category }
             .mapValues { it.value.sumOf { tx -> tx.amount } }
-            .map { CategoryWithAmount(it.key, it.value) }
-            .sortedByDescending { it.amount }
+            .toList()
+            .sortedByDescending { it.second }
         
-        updateIncomePieChart(incomeByCategory)
+        val incomeCategoriesWithAmount = incomeByCategory.map { (categoryName, amount) ->
+            val emoji = categories.find { it.name == categoryName }?.emoji ?: ""
+            CategoryWithAmount(categoryName, amount, emoji)
+        }
+        
+        updateIncomePieChart(incomeCategoriesWithAmount)
     }
     
     private fun updateCategorySummary() {
@@ -387,10 +426,12 @@ class HomeFragment : Fragment() {
         
         val totalExpense = expensesByCategory.sumOf { it.second }
         val currency = PrefsManager.getCurrency()
+        val allCategories = PrefsManager.loadCategories()
         
-        val categoryItems = expensesByCategory.map { (category, amount) ->
+        val categoryItems = expensesByCategory.map { (categoryName, amount) ->
             val percentage = if (totalExpense > 0) ((amount / totalExpense) * 100).toInt() else 0
-            CategorySpendingItem(category, amount, percentage, currency)
+            val emoji = allCategories.find { it.name == categoryName }?.emoji ?: ""
+            CategorySpendingItem(categoryName, emoji, amount, percentage, currency)
         }
         
         categoryAdapter.submitList(categoryItems)
@@ -457,7 +498,17 @@ class HomeFragment : Fragment() {
             
             fun bind(transaction: Transaction) {
                 textTitle.text = transaction.title
-                textCategory.text = transaction.category
+                
+                // Find category to get emoji
+                val categories = PrefsManager.loadCategories()
+                val category = categories.find { it.name == transaction.category }
+                
+                // Display category with emoji if available
+                if (category != null && category.emoji != null && category.emoji.isNotEmpty()) {
+                    textCategory.text = "${category.emoji} ${transaction.category}"
+                } else {
+                    textCategory.text = transaction.category
+                }
                 
                 // Format date
                 val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -469,10 +520,10 @@ class HomeFragment : Fragment() {
                 
                 if (transaction.type == TxType.EXPENSE) {
                     textAmount.text = "-$formattedAmount"
-                    textAmount.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
+                    textAmount.setTextColor(resources.getColor(R.color.expense_red, null))
                 } else {
                     textAmount.text = formattedAmount
-                    textAmount.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
+                    textAmount.setTextColor(resources.getColor(R.color.income_green, null))
                 }
                 
                 itemView.setOnClickListener { onClick(transaction) }
@@ -484,6 +535,7 @@ class HomeFragment : Fragment() {
     // Data class for category spending
     data class CategorySpendingItem(
         val category: String,
+        val emoji: String,
         val amount: Double,
         val percentage: Int,
         val currency: String
@@ -518,7 +570,11 @@ class HomeFragment : Fragment() {
             private val progressBar: ProgressBar = itemView.findViewById(R.id.progressCategory)
             
             fun bind(item: CategorySpendingItem) {
-                textCategory.text = item.category
+                if (item.emoji != null && item.emoji.isNotEmpty()) {
+                    textCategory.text = "${item.emoji} ${item.category}"
+                } else {
+                    textCategory.text = item.category
+                }
                 textAmount.text = CurrencyFormatter.formatCurrency(item.amount, item.currency)
                 progressBar.progress = item.percentage
             }
