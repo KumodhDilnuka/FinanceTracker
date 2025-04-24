@@ -34,8 +34,9 @@
         android:id="@+id/progressCategory"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="8dp"
         android:layout_marginTop="4dp"
+        android:progressDrawable="@drawable/custom_progress_bar"
         android:max="100"
         tools:progress="70" />
 </LinearLayout> 
