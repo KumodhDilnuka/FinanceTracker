@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:colorBackground">
+
+    <TextView
+        android:id="@+id/textViewPasscodeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:text="Enter Passcode"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewPasscodeSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Please enter your 4-digit passcode"
+        android:textColor="?android:textColorSecondary"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewPasscodeTitle" />
+
+    <LinearLayout
+        android:id="@+id/passcodeDotsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewPasscodeSubtitle">
+
+        <View
+            android:id="@+id/passcodeDigit1"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/passcode_dot_empty" />
+
+        <View
+            android:id="@+id/passcodeDigit2"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/passcode_dot_empty" />
+
+        <View
+            android:id="@+id/passcodeDigit3"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/passcode_dot_empty" />
+
+        <View
+            android:id="@+id/passcodeDigit4"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/passcode_dot_empty" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewPasscodeError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text=""
+        android:textColor="@color/expense_red"
+        android:textSize="16sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passcodeDotsContainer" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/keypadContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Row 1: 1, 2, 3 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey1"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="1"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey2"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey3"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey1"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="2"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey3"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey2"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="3"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Row 2: 4, 5, 6 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey4"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="4"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey5"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey6"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey4"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey2">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="5"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey6"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey5"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey3">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="6"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Row 3: 7, 8, 9 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey7"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey4">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="7"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey8"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey9"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey7"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey5">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="8"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey9"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey8"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey6">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="9"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Row 4: ⌫, 0, Cancel -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKeyBackspace"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKey0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey7">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_backspace"
+                app:tint="@color/passcode_button_text" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKey0"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toStartOf="@+id/buttonKeyCancel"
+            app:layout_constraintStart_toEndOf="@+id/buttonKeyBackspace"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey8">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="0"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonKeyCancel"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/passcode_button_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/buttonKey0"
+            app:layout_constraintTop_toBottomOf="@+id/buttonKey9">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Cancel"
+                android:textColor="@color/passcode_button_text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout> 

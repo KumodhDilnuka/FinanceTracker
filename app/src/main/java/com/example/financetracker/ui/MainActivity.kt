@@ -1,6 +1,7 @@
 package com.example.financetracker.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -13,13 +14,21 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.financetracker.R
 import com.example.financetracker.util.PrefsManager
+import com.example.financetracker.util.SecurityManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
     
     companion object {
         private const val TAG = "MainActivity"
+        private const val REQUEST_PASSCODE_VERIFICATION = 1001
     }
+    
+    // Flag to track if the app is locked
+    private var isAppLocked = false
+    
+    // Flag to track if we're currently checking passcode
+    private var isCheckingPasscode = false
     
     // Request notification permission launcher for Android 13+
     private val requestPermissionLauncher = registerForActivityResult(
@@ -54,6 +63,60 @@ class MainActivity : AppCompatActivity() {
         
         // Request notification permission for Android 13+
         requestNotificationPermission()
+        
+        // Check if passcode is enabled - only on first launch
+        if (savedInstanceState == null) {
+            checkPasscodeProtection()
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        
+        // Only check passcode again when returning to the app from background
+        if (isAppLocked && !isCheckingPasscode) {
+            checkPasscodeProtection()
+        }
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        
+        // Set app as locked when going to background, but not when just checking passcode
+        if (!isCheckingPasscode) {
+            isAppLocked = true
+        }
+    }
+    
+    private fun checkPasscodeProtection() {
+        if (SecurityManager.isPasscodeEnabled(this)) {
+            isAppLocked = true
+            isCheckingPasscode = true
+            // Show passcode verification screen
+            val intent = Intent(this, PasscodeActivity::class.java)
+            intent.putExtra(PasscodeActivity.EXTRA_MODE, PasscodeActivity.MODE_VERIFY)
+            startActivityForResult(intent, REQUEST_PASSCODE_VERIFICATION)
+        } else {
+            isAppLocked = false
+            isCheckingPasscode = false
+        }
+    }
+    
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        if (requestCode == REQUEST_PASSCODE_VERIFICATION) {
+            isCheckingPasscode = false
+            if (resultCode == RESULT_OK) {
+                // Passcode verified successfully
+                isAppLocked = false
+                Log.d(TAG, "Passcode verified successfully")
+            } else {
+                // Passcode verification failed or canceled
+                Log.d(TAG, "Passcode verification failed/canceled")
+                finish() // Exit the app
+            }
+        }
     }
     
     private fun applyThemeMode() {

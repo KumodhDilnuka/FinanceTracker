@@ -46,6 +46,8 @@ class SettingsFragment : Fragment() {
     private lateinit var radioGroupBackupStorage: RadioGroup
     private lateinit var radioInternalStorage: RadioButton
     private lateinit var radioExternalStorage: RadioButton
+    private lateinit var switchAppLock: com.google.android.material.switchmaterial.SwitchMaterial
+    private lateinit var buttonChangePasscode: com.google.android.material.button.MaterialButton
     
     private val REQUEST_OPEN_DOCUMENT = 1001
     private val REQUEST_STORAGE_PERMISSION = 1002
@@ -84,6 +86,11 @@ class SettingsFragment : Fragment() {
         
         // Now enable user interaction tracking
         isUserInteraction = true
+        
+        // Update passcode UI based on current state
+        val passcodeEnabled = com.example.financetracker.util.SecurityManager.isPasscodeEnabled(requireContext())
+        switchAppLock.isChecked = passcodeEnabled
+        buttonChangePasscode.visibility = if (passcodeEnabled) View.VISIBLE else View.GONE
     }
     
     private fun initViews(view: View) {
@@ -108,6 +115,14 @@ class SettingsFragment : Fragment() {
         } else {
             radioExternalStorage.isChecked = true
         }
+        
+        // Initialize security controls
+        switchAppLock = view.findViewById(R.id.switchAppLock)
+        buttonChangePasscode = view.findViewById(R.id.buttonChangePasscode)
+        
+        // Set initial state from preferences
+        switchAppLock.isChecked = com.example.financetracker.util.SecurityManager.isPasscodeEnabled(requireContext())
+        buttonChangePasscode.visibility = if (switchAppLock.isChecked) View.VISIBLE else View.GONE
     }
     
     private fun setupCurrencySpinner() {
@@ -190,6 +205,31 @@ class SettingsFragment : Fragment() {
         radioGroupBackupStorage.setOnCheckedChangeListener { _, checkedId ->
             val useInternalStorage = checkedId == R.id.radioInternalStorage
             PrefsManager.setUseInternalStorageForBackup(useInternalStorage)
+        }
+        
+        // Setup app lock switch
+        switchAppLock.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // Enable passcode
+                if (com.example.financetracker.util.SecurityManager.isPasscodeEnabled(requireContext())) {
+                    // Passcode is already set, just show the change button
+                    buttonChangePasscode.visibility = View.VISIBLE
+                } else {
+                    // Launch passcode creation
+                    PasscodeActivity.startForCreation(requireContext())
+                }
+            } else {
+                // Disable passcode
+                if (com.example.financetracker.util.SecurityManager.isPasscodeEnabled(requireContext())) {
+                    // Verify passcode before disabling
+                    showPasscodeDisableConfirmation()
+                }
+            }
+        }
+        
+        // Setup change passcode button
+        buttonChangePasscode.setOnClickListener {
+            PasscodeActivity.startForChange(requireContext())
         }
     }
     
@@ -474,6 +514,8 @@ class SettingsFragment : Fragment() {
     }
     
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
         when (requestCode) {
             REQUEST_OPEN_DOCUMENT -> {
                 if (resultCode == Activity.RESULT_OK) {
@@ -517,6 +559,18 @@ class SettingsFragment : Fragment() {
                     }
                 }
             }
+            REQUEST_DISABLE_PASSCODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    // Passcode verified, disable passcode
+                    com.example.financetracker.util.SecurityManager.setPasscodeEnabled(requireContext(), false)
+                    com.example.financetracker.util.SecurityManager.clearPasscode(requireContext())
+                    buttonChangePasscode.visibility = View.GONE
+                    showMessage("App lock disabled")
+                } else {
+                    // Failed verification or canceled, reset the switch
+                    switchAppLock.isChecked = true
+                }
+            }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -535,6 +589,26 @@ class SettingsFragment : Fragment() {
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
+    }
+    
+    /**
+     * Shows a confirmation dialog before disabling passcode
+     */
+    private fun showPasscodeDisableConfirmation() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Disable App Lock")
+            .setMessage("Are you sure you want to disable app lock? This will remove your passcode protection.")
+            .setPositiveButton("Disable") { _, _ ->
+                // Create an intent to verify the current passcode
+                val intent = Intent(requireContext(), PasscodeActivity::class.java)
+                intent.putExtra(PasscodeActivity.EXTRA_MODE, PasscodeActivity.MODE_VERIFY)
+                startActivityForResult(intent, REQUEST_DISABLE_PASSCODE)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                // User canceled, reset the switch
+                switchAppLock.isChecked = true
+            }
+            .show()
     }
     
     override fun onRequestPermissionsResult(
@@ -557,5 +631,12 @@ class SettingsFragment : Fragment() {
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
+    }
+
+    companion object {
+        private const val REQUEST_OPEN_DOCUMENT = 1001
+        private const val REQUEST_STORAGE_PERMISSION = 1002
+        private const val REQUEST_MANAGE_STORAGE = 1003
+        private const val REQUEST_DISABLE_PASSCODE = 1004
     }
 } 

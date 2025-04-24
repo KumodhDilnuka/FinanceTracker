@@ -5,14 +5,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="?android:colorBackground"
     tools:context=".ui.OnboardingActivity">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@android:color/white"
+        android:background="?android:colorBackground"
         app:layout_constraintBottom_toTopOf="@+id/layoutBottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,6 +25,7 @@
         android:layout_margin="16dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -44,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:text="Skip"
                 android:textAllCaps="false"
-                android:textColor="@color/primary" />
+                android:textColor="?attr/colorPrimary" />
 
             <View
                 android:layout_width="0dp"
@@ -59,7 +60,7 @@
                 android:textAllCaps="false"
                 android:paddingHorizontal="24dp"
                 app:cornerRadius="24dp"
-                android:backgroundTint="@color/primary" />
+                android:backgroundTint="?attr/colorPrimary" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

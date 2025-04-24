@@ -9,16 +9,44 @@
     
     <!-- Finance Tracker theme -->
     <style name="Base.Theme.FinanceTracker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here with new color scheme -->
+        <!-- Light theme with modern color scheme -->
+        <!-- Primary brand colors -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/secondary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- Secondary brand colors -->
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/tertiary</item>
         <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- Accent and surface colors -->
         <item name="colorAccent">@color/accent</item>
-        <item name="android:colorBackground">@android:color/white</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        
+        <!-- Card colors -->
+        <item name="cardBackgroundColor">@color/card_background</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+        
+        <!-- Status bar -->
         <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        
+        <!-- Ripple effect -->
+        <item name="colorControlHighlight">@color/tertiary</item>
     </style>
 
     <style name="Theme.FinanceTracker" parent="Base.Theme.FinanceTracker" />

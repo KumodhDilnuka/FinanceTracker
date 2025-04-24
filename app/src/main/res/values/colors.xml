@@ -8,29 +8,69 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- New app color scheme -->
-    <color name="primary">#493D9E</color>
-    <color name="secondary">#B2A5FF</color>
-    <color name="tertiary">#DAD2FF</color>
+    <!-- Light mode color scheme -->
+    <color name="primary">#6750A4</color>
+    <color name="primary_dark">#4F378B</color>
+    <color name="secondary">#9985ED</color>
+    <color name="tertiary">#D9D6FE</color>
     <color name="accent">#FFF2AF</color>
-    <color name="card_background">#F1EFEC</color>
+    <color name="background">#F8F6FF</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="surface">#F1EEFF</color>
     
-    <!-- Transaction type colors -->
-    <color name="income_green">#4CAF50</color>
-    <color name="expense_red">#F44336</color>
-    
-    <!-- Chip state colors -->
-    <color name="chip_background_color">#E6DFF8</color>
-    
+    <!-- Legacy color names (for backward compatibility) -->
     <color name="colorPrimary">@color/primary</color>
     <color name="colorSecondary">@color/secondary</color>
     <color name="colorAccent">@color/accent</color>
-    <color name="colorBackground">@color/tertiary</color>
+    <color name="colorBackground">@color/background</color>
+    
+    <!-- Text colors for light mode -->
+    <color name="text_primary">#1C1B1F</color>
+    <color name="text_secondary">#49454F</color>
+    <color name="text_hint">#79747E</color>
+    
+    <!-- Transaction type colors -->
+    <color name="income_green">#3CAA67</color>
+    <color name="expense_red">#E55744</color>
+    
+    <!-- Chip state colors -->
+    <color name="chip_background_color">#E6DFF8</color>
+    <color name="chip_selected_color">@color/primary</color>
+    
+    <!-- Chart colors -->
+    <color name="chart_color_1">#6750A4</color>
+    <color name="chart_color_2">#9985ED</color>
+    <color name="chart_color_3">#D9D6FE</color>
+    <color name="chart_color_4">#4F378B</color>
+    <color name="chart_color_5">#7E64FF</color>
+    <color name="chart_color_6">#C3B9FF</color>
     
     <!-- Dark mode colors -->
-    <color name="dark_background">#121212</color>
-    <color name="dark_text_primary">#E0E0E0</color>
-    <color name="dark_text_secondary">#B0B0B0</color>
-    <color name="dark_surface">#444444</color>
-    <color name="dark_card_background">#888888</color>
+    <color name="dark_primary">#9985ED</color>
+    <color name="dark_primary_dark">#7E64FF</color>
+    <color name="dark_secondary">#6750A4</color>
+    <color name="dark_tertiary">#4F378B</color>
+    <color name="dark_accent">#FFE991</color>
+    <color name="dark_background">#1C1B1F</color>
+    <color name="dark_surface">#2D2C33</color>
+    <color name="dark_card_background">#39383D</color>
+    
+    <!-- Text colors for dark mode -->
+    <color name="dark_text_primary">#E6E1E5</color>
+    <color name="dark_text_secondary">#C4C0C8</color>
+    <color name="dark_text_hint">#948F99</color>
+
+    <!-- Passcode colors -->
+    <color name="passcode_button_background">@color/surface</color>
+    <color name="passcode_button_text">@color/text_primary</color>
+    <color name="passcode_dot_empty">@color/tertiary</color>
+    <color name="passcode_dot_filled">@color/primary</color>
+    <color name="passcode_title_text">@color/text_primary</color>
+
+    <!-- Dark mode passcode colors -->
+    <color name="dark_passcode_button_background">@color/dark_surface</color>
+    <color name="dark_passcode_button_text">@color/dark_text_primary</color>
+    <color name="dark_passcode_dot_empty">@color/dark_tertiary</color>
+    <color name="dark_passcode_dot_filled">@color/dark_primary</color>
+    <color name="dark_passcode_title_text">@color/dark_text_primary</color>
 </resources>

@@ -7,19 +7,43 @@
     
     <!-- Finance Tracker night theme -->
     <style name="Base.Theme.FinanceTracker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Dark theme settings with new color scheme -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/secondary</item>
+        <!-- Dark theme with enhanced color scheme -->
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/dark_primary</item>
+        <item name="colorPrimaryVariant">@color/dark_primary_dark</item>
         <item name="colorOnPrimary">@color/dark_text_primary</item>
-        <item name="colorSecondary">@color/tertiary</item>
-        <item name="colorSecondaryVariant">@color/tertiary</item>
+        
+        <!-- Secondary brand colors -->
+        <item name="colorSecondary">@color/dark_secondary</item>
+        <item name="colorSecondaryVariant">@color/dark_tertiary</item>
         <item name="colorOnSecondary">@color/dark_text_primary</item>
-        <item name="colorAccent">@color/accent</item>
+        
+        <!-- Accent and surface colors -->
+        <item name="colorAccent">@color/dark_accent</item>
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorOnSurface">@color/dark_text_primary</item>
+        
+        <!-- Background colors -->
         <item name="android:colorBackground">@color/dark_background</item>
-        <item name="android:statusBarColor">@color/dark_background</item>
+        <item name="colorOnBackground">@color/dark_text_primary</item>
+        
+        <!-- Card colors -->
+        <item name="cardBackgroundColor">@color/dark_card_background</item>
+        
+        <!-- Text colors -->
         <item name="android:textColor">@color/dark_text_primary</item>
         <item name="android:textColorSecondary">@color/dark_text_secondary</item>
-        <item name="cardBackgroundColor">@color/dark_card_background</item>
-        <item name="colorSurface">@color/dark_surface</item>
+        <item name="android:textColorHint">@color/dark_text_hint</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/dark_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/dark_background</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        
+        <!-- Ripple effect -->
+        <item name="colorControlHighlight">@color/dark_tertiary</item>
     </style>
 </resources>

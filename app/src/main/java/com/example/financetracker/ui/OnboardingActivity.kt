@@ -43,7 +43,6 @@ class OnboardingActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.decorView.setBackgroundColor(android.graphics.Color.WHITE)
         
         // If onboarding is completed, go to MainActivity
         if (PrefsManager.isOnboardingCompleted()) {
@@ -62,27 +61,8 @@ class OnboardingActivity : AppCompatActivity() {
         val adapter = OnboardingAdapter(onboardingItems)
         viewPager.adapter = adapter
         
-        // Set background colors for the entire activity
-        window.decorView.setBackgroundColor(android.graphics.Color.WHITE)
-        findViewById<View>(android.R.id.content).setBackgroundColor(android.graphics.Color.WHITE)
-        
         // Remove overscroll effect
         viewPager.getChildAt(0).overScrollMode = View.OVER_SCROLL_NEVER
-        
-        // Force white background for the ViewPager and internal RecyclerView
-        viewPager.setBackgroundColor(android.graphics.Color.WHITE)
-        (viewPager.getChildAt(0) as? View)?.setBackgroundColor(android.graphics.Color.WHITE)
-        
-        // Apply background color with a delay to ensure it takes effect
-        Handler(Looper.getMainLooper()).postDelayed({
-            window.decorView.setBackgroundColor(android.graphics.Color.WHITE)
-            viewPager.setBackgroundColor(android.graphics.Color.WHITE)
-            (viewPager.getChildAt(0) as? View)?.setBackgroundColor(android.graphics.Color.WHITE)
-            
-            // Force redraw
-            viewPager.invalidate()
-            (viewPager.getChildAt(0) as? View)?.invalidate()
-        }, 100)
         
         // Handle ViewPager page changes
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
@@ -95,11 +75,6 @@ class OnboardingActivity : AppCompatActivity() {
                 } else {
                     buttonNext.text = "Next"
                 }
-                
-                // Re-apply white background on page change
-                window.decorView.setBackgroundColor(android.graphics.Color.WHITE)
-                viewPager.setBackgroundColor(android.graphics.Color.WHITE)
-                (viewPager.getChildAt(0) as? View)?.setBackgroundColor(android.graphics.Color.WHITE)
             }
         })
         
@@ -119,10 +94,7 @@ class OnboardingActivity : AppCompatActivity() {
     
     override fun onResume() {
         super.onResume()
-        // Re-apply white background when activity is resumed
-        window.decorView.setBackgroundColor(android.graphics.Color.WHITE)
-        viewPager.setBackgroundColor(android.graphics.Color.WHITE)
-        (viewPager.getChildAt(0) as? View)?.setBackgroundColor(android.graphics.Color.WHITE)
+        // No need to force background color here anymore
     }
     
     private fun completeOnboarding() {
@@ -143,13 +115,11 @@ class OnboardingActivity : AppCompatActivity() {
             val view = android.view.LayoutInflater.from(parent.context).inflate(
                 R.layout.item_onboarding_page, parent, false
             )
-            view.setBackgroundColor(android.graphics.Color.WHITE)
             return OnboardingViewHolder(view)
         }
         
         override fun onBindViewHolder(holder: OnboardingViewHolder, position: Int) {
             holder.bind(items[position])
-            holder.itemView.setBackgroundColor(android.graphics.Color.WHITE)
         }
         
         override fun getItemCount(): Int = items.size
@@ -159,17 +129,10 @@ class OnboardingActivity : AppCompatActivity() {
             private val titleText = view.findViewById<TextView>(R.id.textViewTitle)
             private val descriptionText = view.findViewById<TextView>(R.id.textViewDescription)
             
-            init {
-                view.setBackgroundColor(android.graphics.Color.WHITE)
-            }
-            
             fun bind(item: OnboardingItem) {
                 imageView.setImageResource(item.image)
                 titleText.text = item.title
                 descriptionText.text = item.description
-                
-                // Apply white background to ensure it's white
-                itemView.setBackgroundColor(android.graphics.Color.WHITE)
             }
         }
     }

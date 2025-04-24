@@ -56,6 +56,12 @@
             android:exported="false"
             android:parentActivityName="com.example.financetracker.ui.MainActivity" />
             
+        <activity
+            android:name="com.example.financetracker.ui.PasscodeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FinanceTracker"
+            android:screenOrientation="portrait" />
+            
     </application>
 
 </manifest>
