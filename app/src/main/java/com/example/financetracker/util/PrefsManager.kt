@@ -15,6 +15,7 @@ object PrefsManager {
     private const val KEY_BUDGET = "budget"
     private const val KEY_CURRENCY = "currency"
     private const val KEY_CATEGORIES = "categories"
+    private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
     
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -73,6 +74,14 @@ object PrefsManager {
         return gson.fromJson(json, type)
     }
     
+    fun isOnboardingCompleted(): Boolean {
+        return prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+    }
+    
+    fun setOnboardingCompleted(completed: Boolean) {
+        prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETED, completed).apply()
+    }
+    
     private fun getDefaultCategories(): List<Category> {
         return listOf(
             Category("Salary", com.example.financetracker.data.TxType.INCOME, "💰"),
@@ -82,7 +91,7 @@ object PrefsManager {
             Category("Entertainment", com.example.financetracker.data.TxType.EXPENSE, "🎬"),
             Category("Housing", com.example.financetracker.data.TxType.EXPENSE, "🏠"),
             Category("Utilities", com.example.financetracker.data.TxType.EXPENSE, "💡"),
-            Category("Healthcare", com.example.financetracker.data.TxType.EXPENSE, "��")
+            Category("Healthcare", com.example.financetracker.data.TxType.EXPENSE, "💊")
         )
     }
 } 

@@ -126,12 +126,41 @@ object PrefsManager {
     }
     
     fun isOnboardingCompleted(): Boolean {
-        // Default to true to avoid crashes
-        return true
+        try {
+            if (!::prefs.isInitialized) {
+                return com.example.financetracker.util.PrefsManager.isOnboardingCompleted()
+            }
+            
+            // Check both the legacy and new implementation
+            val legacyValue = prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+            
+            // If already completed in legacy system, ensure it's also set in new system
+            if (legacyValue) {
+                com.example.financetracker.util.PrefsManager.setOnboardingCompleted(true)
+            }
+            
+            // Use the new implementation's value
+            return com.example.financetracker.util.PrefsManager.isOnboardingCompleted()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking onboarding status: ${e.message}")
+            return com.example.financetracker.util.PrefsManager.isOnboardingCompleted()
+        }
     }
     
     fun setOnboardingCompleted(completed: Boolean) {
-        // No-op implementation
+        try {
+            if (!::prefs.isInitialized) {
+                com.example.financetracker.util.PrefsManager.setOnboardingCompleted(completed)
+                return
+            }
+            
+            // Update both legacy and new implementations
+            prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETED, completed).apply()
+            com.example.financetracker.util.PrefsManager.setOnboardingCompleted(completed)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting onboarding status: ${e.message}")
+            com.example.financetracker.util.PrefsManager.setOnboardingCompleted(completed)
+        }
     }
     
     /**

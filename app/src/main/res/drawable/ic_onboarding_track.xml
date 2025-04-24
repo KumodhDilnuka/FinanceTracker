@@ -39,19 +39,19 @@
     <path
         android:fillColor="#FFC107"
         android:pathData="M150,45m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
-
+    
     <path
         android:fillColor="#FFD54F"
         android:pathData="M150,45m-16,0a16,16 0,1 1,32 0a16,16 0,1 1,-32 0" />
-
+    
     <path
         android:fillColor="#FFC107"
         android:pathData="M130,60m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
-
+    
     <path
         android:fillColor="#FFD54F"
         android:pathData="M130,60m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0" />
-
+    
     <!-- $ Symbol on Coin -->
     <path
         android:fillColor="#FFA000"
@@ -59,4 +59,4 @@
         android:strokeWidth="2"
         android:strokeColor="#FFA000"
         android:strokeLineCap="round" />
-</vector>
+</vector> 

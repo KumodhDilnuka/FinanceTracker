@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <!-- Chart Container -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M45,45L155,45A10,10 0,0 1,165 55L165,145A10,10 0,0 1,155 155L45,155A10,10 0,0 1,35 145L35,55A10,10 0,0 1,45 45z" />
+    
+    <!-- Chart Title -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M60,60L140,60A2,2 0,0 1,142 62L142,62A2,2 0,0 1,140 64L60,64A2,2 0,0 1,58 62L58,62A2,2 0,0 1,60 60z" />
+    
+    <!-- Chart Grid Lines -->
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="@color/tertiary"
+        android:pathData="M45,85L155,85" />
+    
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="@color/tertiary"
+        android:pathData="M45,115L155,115" />
+    
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="@color/tertiary"
+        android:pathData="M65,75L65,145" />
+    
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="@color/tertiary"
+        android:pathData="M100,75L100,145" />
+    
+    <path
+        android:strokeWidth="1"
+        android:strokeColor="@color/tertiary"
+        android:pathData="M135,75L135,145" />
+    
+    <!-- Bar Chart Bars -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M60,130L70,130A2,2 0,0 1,72 132L72,145A2,2 0,0 1,70 147L60,147A2,2 0,0 1,58 145L58,132A2,2 0,0 1,60 130z" />
+    
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M95,100L105,100A2,2 0,0 1,107 102L107,145A2,2 0,0 1,105 147L95,147A2,2 0,0 1,93 145L93,102A2,2 0,0 1,95 100z" />
+    
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M130,120L140,120A2,2 0,0 1,142 122L142,145A2,2 0,0 1,140 147L130,147A2,2 0,0 1,128 145L128,122A2,2 0,0 1,130 120z" />
+    
+    <!-- Line Chart -->
+    <path
+        android:strokeWidth="3"
+        android:strokeColor="@color/accent"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M45,130C55,120 75,125 100,90C125,70 145,90 155,85" />
+    
+    <!-- Chart Dots -->
+    <path
+        android:fillColor="@color/accent"
+        android:pathData="M45,130m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    
+    <path
+        android:fillColor="@color/accent"
+        android:pathData="M100,90m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    
+    <path
+        android:fillColor="@color/accent"
+        android:pathData="M155,85m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    
+    <!-- Pie Chart -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M175,40m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+    
+    <path
+        android:fillColor="@color/secondary"
+        android:pathData="M175,40l-10,-17.32a20,20 0,0 1,20 0z" />
+    
+    <path
+        android:fillColor="@color/accent"
+        android:pathData="M175,40l10,-17.32a20,20 0,0 1,10 17.32z" />
+</vector> 

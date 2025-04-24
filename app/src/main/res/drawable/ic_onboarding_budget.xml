@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <!-- Budget Chart -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M50,50L150,50A10,10 0,0 1,160 60L160,140A10,10 0,0 1,150 150L50,150A10,10 0,0 1,40 140L40,60A10,10 0,0 1,50 50z" />
+    
+    <!-- Chart Inner -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M55,55L145,55A5,5 0,0 1,150 60L150,140A5,5 0,0 1,145 145L55,145A5,5 0,0 1,50 140L50,60A5,5 0,0 1,55 55z" />
+    
+    <!-- Chart Title -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M70,70L130,70A2,2 0,0 1,132 72L132,72A2,2 0,0 1,130 74L70,74A2,2 0,0 1,68 72L68,72A2,2 0,0 1,70 70z" />
+    
+    <!-- Chart Subtitle -->
+    <path
+        android:fillColor="@color/secondary"
+        android:pathData="M75,80L125,80A1,1 0,0 1,126 81L126,81A1,1 0,0 1,125 82L75,82A1,1 0,0 1,74 81L74,81A1,1 0,0 1,75 80z" />
+    
+    <!-- Progress Bar Background -->
+    <path
+        android:fillColor="@color/tertiary"
+        android:pathData="M60,100L140,100A5,5 0,0 1,145 105L145,105A5,5 0,0 1,140 110L60,110A5,5 0,0 1,55 105L55,105A5,5 0,0 1,60 100z" />
+    
+    <!-- Progress Bar Fill -->
+    <path
+        android:fillColor="@color/accent"
+        android:pathData="M60,100L110,100A5,5 0,0 1,115 105L115,105A5,5 0,0 1,110 110L60,110A5,5 0,0 1,55 105L55,105A5,5 0,0 1,60 100z" />
+    
+    <!-- Percentage Text Background -->
+    <path
+        android:fillColor="@color/secondary"
+        android:pathData="M100,120m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+    
+    <!-- Calendar Icon -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M175,80m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+    
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M170,75L180,75A1,1 0,0 1,181 76L181,85A1,1 0,0 1,180 86L170,86A1,1 0,0 1,169 85L169,76A1,1 0,0 1,170 75z" />
+    
+    <!-- Dollar Sign -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M100,116L100,124M97,118L103,118M97,122L103,122"
+        android:strokeWidth="2"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round" />
+    
+    <!-- Second Percentage Bar -->
+    <path
+        android:fillColor="@color/tertiary"
+        android:pathData="M60,130L140,130A5,5 0,0 1,145 135L145,135A5,5 0,0 1,140 140L60,140A5,5 0,0 1,55 135L55,135A5,5 0,0 1,60 130z" />
+    
+    <!-- Second Progress Bar Fill -->
+    <path
+        android:fillColor="@color/income_green"
+        android:pathData="M60,130L90,130A5,5 0,0 1,95 135L95,135A5,5 0,0 1,90 140L60,140A5,5 0,0 1,55 135L55,135A5,5 0,0 1,60 130z" />
+</vector> 
