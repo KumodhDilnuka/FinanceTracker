@@ -297,6 +297,11 @@ class CategoriesFragment : Fragment() {
                     showEditCategoryDialog(category)
                 }
                 
+                // Set click listener for editing
+                itemView.setOnClickListener {
+                    showEditCategoryDialog(category)
+                }
+                
                 // Set long click listener for deletion
                 itemView.setOnLongClickListener {
                     onLongClick(category)
