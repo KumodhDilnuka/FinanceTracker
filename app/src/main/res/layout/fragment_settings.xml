@@ -79,9 +79,12 @@
                 android:padding="16dp">
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutBudget"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Monthly Budget">
+                    android:hint="Monthly Budget"
+                    app:helperText="Amount will be converted to system currency if needed"
+                    app:helperTextEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextBudget"

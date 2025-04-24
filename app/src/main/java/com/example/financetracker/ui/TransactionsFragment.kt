@@ -143,7 +143,17 @@ class TransactionsFragment : Fragment() {
             
             fun bind(transaction: Transaction) {
                 textTitle.text = transaction.title
-                textCategory.text = transaction.category
+                
+                // Find category to get emoji
+                val categories = PrefsManager.loadCategories()
+                val category = categories.find { it.name == transaction.category }
+                
+                // Display category with emoji if available
+                if (category != null && category.emoji != null && category.emoji.isNotEmpty()) {
+                    textCategory.text = "${category.emoji} ${transaction.category}"
+                } else {
+                    textCategory.text = transaction.category
+                }
                 
                 // Format date
                 val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())

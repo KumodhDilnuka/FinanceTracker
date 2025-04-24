@@ -2,6 +2,8 @@ package com.example.financetracker.ui
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.financetracker.R
@@ -9,6 +11,7 @@ import com.example.financetracker.data.Category
 import com.example.financetracker.data.PrefsManager
 import com.example.financetracker.data.Transaction
 import com.example.financetracker.data.TxType
+import com.example.financetracker.notification.NotificationHelper
 import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.*
@@ -137,8 +140,50 @@ class AddEditTransactionActivity : AppCompatActivity() {
     }
     
     private fun updateCategorySpinner() {
-        val categories = if (radioIncome.isChecked) incomeCategories else expenseCategories
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        val isIncome = radioIncome.isChecked
+        val categories = PrefsManager.loadCategories().filter { 
+            it.type == if (isIncome) TxType.INCOME else TxType.EXPENSE 
+        }
+        
+        // Create adapter with custom view to display emoji + category name
+        val adapter = object : ArrayAdapter<Category>(
+            this, 
+            android.R.layout.simple_spinner_item, 
+            categories
+        ) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val category = getItem(position)
+                
+                if (view is TextView && category != null) {
+                    val displayText = if (category.emoji != null && category.emoji.isNotEmpty()) {
+                        "${category.emoji} ${category.name}"
+                    } else {
+                        category.name
+                    }
+                    view.text = displayText
+                }
+                
+                return view
+            }
+            
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent)
+                val category = getItem(position)
+                
+                if (view is TextView && category != null) {
+                    val displayText = if (category.emoji != null && category.emoji.isNotEmpty()) {
+                        "${category.emoji} ${category.name}"
+                    } else {
+                        category.name
+                    }
+                    view.text = displayText
+                }
+                
+                return view
+            }
+        }
+        
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCategory.adapter = adapter
         
@@ -148,7 +193,7 @@ class AddEditTransactionActivity : AppCompatActivity() {
             val transaction = transactions.find { it.id == editingTransactionId }
             
             if (transaction != null) {
-                val position = categories.indexOf(transaction.category)
+                val position = categories.indexOfFirst { it.name == transaction.category }
                 if (position >= 0) {
                     spinnerCategory.setSelection(position)
                 }
@@ -204,8 +249,11 @@ class AddEditTransactionActivity : AppCompatActivity() {
             return
         }
         
-        val category = spinnerCategory.selectedItem?.toString()
-        if (category == null) {
+        // Get the selected Category object to extract the name
+        val selectedCategory = (spinnerCategory.selectedItem as? Category)?.name
+                ?: spinnerCategory.selectedItem?.toString() // Fallback to direct toString if cast fails
+        
+        if (selectedCategory == null) {
             Toast.makeText(this, "Please select a category", Toast.LENGTH_SHORT).show()
             return
         }
@@ -224,7 +272,7 @@ class AddEditTransactionActivity : AppCompatActivity() {
                     id = editingTransactionId!!,
                     title = title,
                     amount = amount,
-                    category = category,
+                    category = selectedCategory,
                     type = type,
                     date = transactionDate,
                     note = note
@@ -236,7 +284,7 @@ class AddEditTransactionActivity : AppCompatActivity() {
                 Transaction(
                     title = title,
                     amount = amount,
-                    category = category,
+                    category = selectedCategory,
                     type = type,
                     date = transactionDate,
                     note = note
@@ -247,8 +295,33 @@ class AddEditTransactionActivity : AppCompatActivity() {
         // Save to storage
         PrefsManager.saveTransactions(transactions)
         
+        // Check budget status and send notification if needed
+        checkBudgetStatus()
+        
         // Show success message and finish activity
         Toast.makeText(this, "Transaction saved successfully", Toast.LENGTH_SHORT).show()
         finish()
+    }
+    
+    /**
+     * Checks the current budget status and sends a notification if the budget is exceeded
+     */
+    private fun checkBudgetStatus() {
+        // Only check budget for expense transactions
+        if (radioExpense.isChecked) {
+            val budget = PrefsManager.getBudget()
+            
+            // Skip if no budget is set
+            if (budget <= 0) return
+            
+            // Calculate total expenses
+            val transactions = PrefsManager.loadTransactions()
+            val totalExpenses = transactions
+                .filter { it.type == TxType.EXPENSE }
+                .sumOf { it.amount }
+            
+            // Check if budget is exceeded and send notification
+            NotificationHelper.checkBudgetStatus(this, totalExpenses, budget)
+        }
     }
 } 

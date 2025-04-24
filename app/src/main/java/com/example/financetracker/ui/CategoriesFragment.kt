@@ -4,7 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.GridLayout
 import android.widget.RadioButton
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -70,6 +73,7 @@ class CategoriesFragment : Fragment() {
             .inflate(R.layout.dialog_add_category, null)
             
         val alertDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Add Category")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
                 // Will be overridden below
@@ -79,12 +83,16 @@ class CategoriesFragment : Fragment() {
             
         alertDialog.show()
         
+        // Get emoji input field (now a direct input field)
+        val editTextEmoji = dialogView.findViewById<EditText>(R.id.editTextCategoryEmoji)
+        
         // Override the positive button to validate input
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val editTextName = dialogView.findViewById<TextView>(R.id.editTextCategoryName)
             val radioIncome = dialogView.findViewById<RadioButton>(R.id.radioIncome)
             
             val name = editTextName.text.toString().trim()
+            val emoji = editTextEmoji.text.toString()
             
             if (name.isEmpty()) {
                 Toast.makeText(requireContext(), "Please enter a category name", Toast.LENGTH_SHORT).show()
@@ -92,7 +100,7 @@ class CategoriesFragment : Fragment() {
             }
             
             val type = if (radioIncome.isChecked) TxType.INCOME else TxType.EXPENSE
-            val newCategory = Category(name, type)
+            val newCategory = Category(name, type, emoji)
             
             // Check for duplicates
             val categories = PrefsManager.loadCategories()
@@ -110,6 +118,81 @@ class CategoriesFragment : Fragment() {
             
             // Dismiss the dialog
             alertDialog.dismiss()
+        }
+    }
+    
+    private fun showEditCategoryDialog(category: Category) {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_add_category, null)
+            
+        // Populate the dialog with existing values
+        val editTextName = dialogView.findViewById<TextView>(R.id.editTextCategoryName)
+        val editTextEmoji = dialogView.findViewById<EditText>(R.id.editTextCategoryEmoji)
+        val radioIncome = dialogView.findViewById<RadioButton>(R.id.radioIncome)
+        val radioExpense = dialogView.findViewById<RadioButton>(R.id.radioExpense)
+        
+        editTextName.text = category.name
+        editTextEmoji.setText(category.emoji)
+        
+        if (category.type == TxType.INCOME) {
+            radioIncome.isChecked = true
+        } else {
+            radioExpense.isChecked = true
+        }
+        
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Edit Category")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                // Will be overridden below
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+            
+        alertDialog.show()
+        
+        // Override the positive button to validate input
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val name = editTextName.text.toString().trim()
+            val emoji = editTextEmoji.text.toString()
+            
+            if (name.isEmpty()) {
+                Toast.makeText(requireContext(), "Please enter a category name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            val type = if (radioIncome.isChecked) TxType.INCOME else TxType.EXPENSE
+            
+            // Check for duplicates (excluding the current category)
+            val categories = PrefsManager.loadCategories()
+            if (categories.any { 
+                    it.name.equals(name, ignoreCase = true) && 
+                    it.type == type && 
+                    !(it.name == category.name && it.type == category.type) 
+                }) {
+                Toast.makeText(requireContext(), "This category already exists", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            // Update the category
+            val updatedCategories = categories.map {
+                if (it.name == category.name && it.type == category.type) {
+                    Category(name, type, emoji)
+                } else {
+                    it
+                }
+            }
+            
+            PrefsManager.saveCategories(updatedCategories)
+            
+            // Update the UI
+            adapter.updateItems(updatedCategories)
+            
+            // Dismiss the dialog
+            alertDialog.dismiss()
+            
+            // Show confirmation
+            Snackbar.make(requireView(), "Category updated", Snackbar.LENGTH_SHORT).show()
         }
     }
     
@@ -187,9 +270,11 @@ class CategoriesFragment : Fragment() {
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val textName: TextView = itemView.findViewById(R.id.textCategoryName)
             private val textType: TextView = itemView.findViewById(R.id.textCategoryType)
+            private val textEmoji: TextView = itemView.findViewById(R.id.textCategoryEmoji)
             
             fun bind(category: Category) {
                 textName.text = category.name
+                textEmoji.text = if (category.emoji != null && category.emoji.isNotEmpty()) category.emoji else "📂" // default emoji
                 
                 val typeText = when (category.type) {
                     TxType.INCOME -> "INCOME"
@@ -202,6 +287,11 @@ class CategoriesFragment : Fragment() {
                     TxType.EXPENSE -> android.R.color.holo_red_dark
                 }
                 textType.setTextColor(resources.getColor(textColor, null))
+                
+                // Set click listener for editing
+                itemView.setOnClickListener {
+                    showEditCategoryDialog(category)
+                }
                 
                 // Set long click listener for deletion
                 itemView.setOnLongClickListener {

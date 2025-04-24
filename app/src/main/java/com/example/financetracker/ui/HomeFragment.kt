@@ -280,7 +280,8 @@ class HomeFragment : Fragment() {
             
             val categoryItems = categories.map { category ->
                 val percentage = if (totalExpense > 0) ((category.amount / totalExpense) * 100).toInt() else 0
-                CategorySpendingItem(category.name, category.amount, percentage, currency)
+                // Use the emoji from CategoryWithAmount
+                CategorySpendingItem(category.name, category.emoji, category.amount, percentage, currency)
             }
             
             categoryAdapter.submitList(categoryItems)
@@ -325,14 +326,14 @@ class HomeFragment : Fragment() {
             .sumOf { it.amount }
             
         if (budget <= 0) {
-            textBudgetInfo.text = "No budget set"
+            textBudgetInfo.text = "No monthly budget set"
             textBudgetPercentage.text = "N/A"
             progressBudget.progress = 0
             return
         }
         
         val percentage = ((totalExpense / budget) * 100).toInt()
-        textBudgetInfo.text = "${CurrencyFormatter.formatCurrency(totalExpense, currency)} / ${CurrencyFormatter.formatCurrency(budget, currency)}"
+        textBudgetInfo.text = "${CurrencyFormatter.formatCurrency(totalExpense, currency)} / ${CurrencyFormatter.formatCurrency(budget, currency)} (Monthly)"
         textBudgetPercentage.text = "$percentage%"
         progressBudget.progress = percentage.coerceAtMost(100)
     }
@@ -361,20 +362,32 @@ class HomeFragment : Fragment() {
             .filter { it.type == TxType.EXPENSE }
             .groupBy { it.category }
             .mapValues { it.value.sumOf { tx -> tx.amount } }
-            .map { CategoryWithAmount(it.key, it.value) }
-            .sortedByDescending { it.amount }
+            .toList()
+            .sortedByDescending { it.second }
         
-        updateExpensePieChart(expensesByCategory)
+        val categories = PrefsManager.loadCategories()
+        
+        val expenseCategoriesWithAmount = expensesByCategory.map { (categoryName, amount) ->
+            val emoji = categories.find { it.name == categoryName }?.emoji ?: ""
+            CategoryWithAmount(categoryName, amount, emoji)
+        }
+        
+        updateExpensePieChart(expenseCategoriesWithAmount)
         
         // Update income pie chart
         val incomeByCategory = transactions
             .filter { it.type == TxType.INCOME }
             .groupBy { it.category }
             .mapValues { it.value.sumOf { tx -> tx.amount } }
-            .map { CategoryWithAmount(it.key, it.value) }
-            .sortedByDescending { it.amount }
+            .toList()
+            .sortedByDescending { it.second }
         
-        updateIncomePieChart(incomeByCategory)
+        val incomeCategoriesWithAmount = incomeByCategory.map { (categoryName, amount) ->
+            val emoji = categories.find { it.name == categoryName }?.emoji ?: ""
+            CategoryWithAmount(categoryName, amount, emoji)
+        }
+        
+        updateIncomePieChart(incomeCategoriesWithAmount)
     }
     
     private fun updateCategorySummary() {
@@ -387,10 +400,12 @@ class HomeFragment : Fragment() {
         
         val totalExpense = expensesByCategory.sumOf { it.second }
         val currency = PrefsManager.getCurrency()
+        val allCategories = PrefsManager.loadCategories()
         
-        val categoryItems = expensesByCategory.map { (category, amount) ->
+        val categoryItems = expensesByCategory.map { (categoryName, amount) ->
             val percentage = if (totalExpense > 0) ((amount / totalExpense) * 100).toInt() else 0
-            CategorySpendingItem(category, amount, percentage, currency)
+            val emoji = allCategories.find { it.name == categoryName }?.emoji ?: ""
+            CategorySpendingItem(categoryName, emoji, amount, percentage, currency)
         }
         
         categoryAdapter.submitList(categoryItems)
@@ -457,7 +472,17 @@ class HomeFragment : Fragment() {
             
             fun bind(transaction: Transaction) {
                 textTitle.text = transaction.title
-                textCategory.text = transaction.category
+                
+                // Find category to get emoji
+                val categories = PrefsManager.loadCategories()
+                val category = categories.find { it.name == transaction.category }
+                
+                // Display category with emoji if available
+                if (category != null && category.emoji != null && category.emoji.isNotEmpty()) {
+                    textCategory.text = "${category.emoji} ${transaction.category}"
+                } else {
+                    textCategory.text = transaction.category
+                }
                 
                 // Format date
                 val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -484,6 +509,7 @@ class HomeFragment : Fragment() {
     // Data class for category spending
     data class CategorySpendingItem(
         val category: String,
+        val emoji: String,
         val amount: Double,
         val percentage: Int,
         val currency: String
@@ -518,7 +544,11 @@ class HomeFragment : Fragment() {
             private val progressBar: ProgressBar = itemView.findViewById(R.id.progressCategory)
             
             fun bind(item: CategorySpendingItem) {
-                textCategory.text = item.category
+                if (item.emoji != null && item.emoji.isNotEmpty()) {
+                    textCategory.text = "${item.emoji} ${item.category}"
+                } else {
+                    textCategory.text = item.category
+                }
                 textAmount.text = CurrencyFormatter.formatCurrency(item.amount, item.currency)
                 progressBar.progress = item.percentage
             }

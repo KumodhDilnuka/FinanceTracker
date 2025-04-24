@@ -50,7 +50,7 @@ class FinanceApplication : Application() {
             .sumOf { it.amount }
         
         // Check budget status for notification
-        Log.d(TAG, "Checking notification with expenses: $totalExpenses, budget: $budget")
+        Log.d(TAG, "Checking notification with expenses: $totalExpenses, budget: $budget (${totalExpenses/budget*100}%)")
         NotificationHelper.checkBudgetStatus(this, totalExpenses, budget)
     }
     
