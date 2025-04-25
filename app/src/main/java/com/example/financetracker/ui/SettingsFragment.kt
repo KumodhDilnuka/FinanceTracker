@@ -15,6 +15,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.financetracker.R
@@ -23,6 +24,7 @@ import com.example.financetracker.data.Transaction
 import com.example.financetracker.util.BackupUtil
 import com.example.financetracker.util.CurrencyConverter
 import com.example.financetracker.util.CurrencyFormatter
+import com.example.financetracker.util.PDFExporter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -48,10 +50,12 @@ class SettingsFragment : Fragment() {
     private lateinit var radioExternalStorage: RadioButton
     private lateinit var switchAppLock: com.google.android.material.switchmaterial.SwitchMaterial
     private lateinit var buttonChangePasscode: com.google.android.material.button.MaterialButton
+    private lateinit var buttonExportPDF: com.google.android.material.button.MaterialButton
     
     private val REQUEST_OPEN_DOCUMENT = 1001
     private val REQUEST_STORAGE_PERMISSION = 1002
     private val REQUEST_MANAGE_STORAGE = 1003
+    private val REQUEST_PDF_PERMISSION = 1004
     
     // Flag to track if spinner selection is from user interaction
     private var isUserInteraction = false
@@ -103,6 +107,9 @@ class SettingsFragment : Fragment() {
         buttonBackup = view.findViewById(R.id.buttonBackup)
         buttonRestore = view.findViewById(R.id.buttonRestore)
         switchDarkMode = view.findViewById(R.id.switchDarkMode)
+        
+        // Initialize PDF export button
+        buttonExportPDF = view.findViewById(R.id.buttonExportPDF)
         
         // Initialize storage option radio buttons
         radioGroupBackupStorage = view.findViewById(R.id.radioGroupBackupStorage)
@@ -199,6 +206,11 @@ class SettingsFragment : Fragment() {
         
         switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
             applyDarkMode(isChecked)
+        }
+        
+        // Setup PDF export button
+        buttonExportPDF.setOnClickListener {
+            exportToPDF()
         }
         
         // Save the backup storage preference when changed
@@ -611,25 +623,222 @@ class SettingsFragment : Fragment() {
             .show()
     }
     
+    /**
+     * Process permission request results
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == REQUEST_STORAGE_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, proceed with backup
-                createExternalBackup()
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        when (requestCode) {
+            REQUEST_STORAGE_PERMISSION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    createExternalBackup()
+                } else {
+                    showSnackbar("Storage permission denied. Cannot create backup.")
+                }
+            }
+            REQUEST_PDF_PERMISSION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    exportToPDF()
+                } else {
+                    showSnackbar("Storage permission denied. Cannot export PDF.")
+                }
+            }
+        }
+    }
+
+    /**
+     * Export transaction data to PDF
+     */
+    private fun exportToPDF() {
+        if (PrefsManager.loadTransactions().isEmpty()) {
+            showSnackbar("No transactions to export")
+            return
+        }
+        
+        val useInternalStorage = radioInternalStorage.isChecked
+        
+        if (!useInternalStorage) {
+            // Check for storage permission if using external storage
+            if (!checkStoragePermission()) {
+                requestStoragePermission(REQUEST_PDF_PERMISSION)
+                return
+            }
+        }
+        
+        try {
+            // Show loading indicator
+            showProgressDialog("Generating PDF...")
+            
+            // Run PDF generation in a background thread to avoid UI freezing
+            Thread {
+                try {
+                    val pdfPath = PDFExporter.exportTransactionsToPDF(requireContext(), useInternalStorage)
+                    
+                    // Update UI on the main thread
+                    requireActivity().runOnUiThread {
+                        dismissProgressDialog()
+                        
+                        if (pdfPath != null) {
+                            showPdfGeneratedDialog(pdfPath)
+                        } else {
+                            showSnackbar("Failed to generate PDF")
+                        }
+                    }
+                } catch (e: Exception) {
+                    requireActivity().runOnUiThread {
+                        dismissProgressDialog()
+                        showSnackbar("Error: ${e.message}")
+                    }
+                }
+            }.start()
+            
+        } catch (e: Exception) {
+            dismissProgressDialog()
+            showSnackbar("Error generating PDF: ${e.message}")
+        }
+    }
+    
+    /**
+     * Show a dialog after the PDF is generated
+     */
+    private fun showPdfGeneratedDialog(pdfPath: String) {
+        val file = File(pdfPath)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("PDF Generated Successfully")
+            .setMessage("PDF saved to:\n$pdfPath")
+            .setPositiveButton("Open") { _, _ ->
+                openPdfFile(file)
+            }
+            .setNegativeButton("Share") { _, _ ->
+                sharePdfFile(file)
+            }
+            .setNeutralButton("Close", null)
+            .show()
+    }
+    
+    /**
+     * Open the generated PDF file
+     */
+    private fun openPdfFile(file: File) {
+        try {
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                FileProvider.getUriForFile(
+                    requireContext(),
+                    "${requireContext().packageName}.fileprovider",
+                    file
+                )
             } else {
-                // Permission denied, show a message
-                Snackbar.make(
-                    requireView(),
-                    "Storage permission is required to save backups to Downloads",
-                    Snackbar.LENGTH_LONG
-                ).show()
+                Uri.fromFile(file)
+            }
+            
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            
+            startActivity(Intent.createChooser(intent, "Open PDF with"))
+        } catch (e: Exception) {
+            showSnackbar("No PDF viewer app found or error opening file")
+        }
+    }
+    
+    /**
+     * Share the generated PDF file
+     */
+    private fun sharePdfFile(file: File) {
+        try {
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                FileProvider.getUriForFile(
+                    requireContext(),
+                    "${requireContext().packageName}.fileprovider",
+                    file
+                )
+            } else {
+                Uri.fromFile(file)
+            }
+            
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/pdf"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, "Finance Tracker Report")
+                putExtra(Intent.EXTRA_TEXT, "Attached is my financial report from Finance Tracker app.")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            
+            startActivity(Intent.createChooser(intent, "Share PDF via"))
+        } catch (e: Exception) {
+            showSnackbar("Error sharing file: ${e.message}")
+        }
+    }
+    
+    /**
+     * Show a progress dialog while processing
+     */
+    private fun showProgressDialog(message: String) {
+        // Use the existing progress dialog implementation or create a new one
+    }
+    
+    /**
+     * Dismiss the progress dialog
+     */
+    private fun dismissProgressDialog() {
+        // Use the existing progress dialog implementation or create a new one
+    }
+    
+    /**
+     * Show a snackbar message
+     */
+    private fun showSnackbar(message: String) {
+        Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show()
+    }
+    
+    /**
+     * Check if we have storage permission
+     */
+    private fun checkStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            val writePermission = ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            val readPermission = ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            writePermission == PackageManager.PERMISSION_GRANTED && readPermission == PackageManager.PERMISSION_GRANTED
+        }
+    }
+    
+    /**
+     * Request storage permission
+     */
+    private fun requestStoragePermission(requestCode: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.addCategory("android.intent.category.DEFAULT")
+                intent.data = Uri.parse(String.format("package:%s", requireContext().packageName))
+                startActivityForResult(intent, REQUEST_MANAGE_STORAGE)
+            } catch (e: Exception) {
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                startActivityForResult(intent, REQUEST_MANAGE_STORAGE)
             }
         } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                requestCode
+            )
         }
     }
 

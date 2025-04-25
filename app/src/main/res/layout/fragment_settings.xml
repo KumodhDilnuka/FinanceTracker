@@ -236,6 +236,51 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- PDF Export Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Export Data"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Export your transaction data as a PDF report for record keeping or sharing purposes."
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="16dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonExportPDF"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="?attr/colorPrimary"
+                        android:text="Export as PDF"
+                        android:textColor="?attr/colorOnPrimary"
+                        app:icon="@android:drawable/ic_menu_save"
+                        app:iconTint="?attr/colorOnPrimary" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
             <!-- Theme Settings Section -->
             <TextView
                 android:layout_width="wrap_content"

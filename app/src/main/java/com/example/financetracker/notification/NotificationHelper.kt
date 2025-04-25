@@ -14,11 +14,13 @@ import com.example.financetracker.FinanceApplication
 import com.example.financetracker.R
 import com.example.financetracker.data.PrefsManager
 import com.example.financetracker.ui.MainActivity
+import java.util.*
 
 object NotificationHelper {
     
     private const val NOTIFICATION_ID_BUDGET_APPROACH = 100
     private const val NOTIFICATION_ID_BUDGET_EXCEEDED = 101
+    private const val NOTIFICATION_ID_DAILY_REMINDER = 102
     private const val TAG = "NotificationHelper"
     
     fun notifyApproachingBudget(context: Context, spentPercentage: Int) {
@@ -92,6 +94,67 @@ object NotificationHelper {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error sending notification: ${e.message}", e)
+        }
+    }
+    
+    fun sendDailyTransactionReminder(context: Context) {
+        // Check if user has already added a transaction today
+        if (hasAddedTransactionToday()) {
+            Log.d(TAG, "User has already added transactions today, skipping reminder notification")
+            return
+        }
+        
+        val intent = Intent(context, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, 
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        
+        val message = "Don't forget to record your daily transactions"
+        
+        val builder = NotificationCompat.Builder(context, FinanceApplication.CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_warning)
+            .setContentTitle("Transaction Reminder")
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+        
+        try {
+            if (checkNotificationPermission(context)) {
+                NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_DAILY_REMINDER, builder.build())
+                Log.d(TAG, "Daily transaction reminder notification sent")
+            } else {
+                Log.d(TAG, "Missing notification permission")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error sending notification: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * Check if user has already added a transaction today
+     */
+    private fun hasAddedTransactionToday(): Boolean {
+        val transactions = PrefsManager.loadTransactions()
+        val calendar = Calendar.getInstance()
+        
+        // Get today's date parts
+        val todayYear = calendar.get(Calendar.YEAR)
+        val todayMonth = calendar.get(Calendar.MONTH)
+        val todayDay = calendar.get(Calendar.DAY_OF_MONTH)
+        
+        // Check if there's any transaction with today's date
+        return transactions.any { transaction ->
+            calendar.timeInMillis = transaction.date
+            val txYear = calendar.get(Calendar.YEAR)
+            val txMonth = calendar.get(Calendar.MONTH)
+            val txDay = calendar.get(Calendar.DAY_OF_MONTH)
+            
+            // Check if the transaction date matches today's date
+            txYear == todayYear && txMonth == todayMonth && txDay == todayDay
         }
     }
     

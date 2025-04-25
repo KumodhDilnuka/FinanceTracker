@@ -5,6 +5,11 @@
     <!-- Permission for posting notifications on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
+    <!-- Permission to schedule alarms -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    
     <!-- Permissions for storage access -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
         android:maxSdkVersion="29" />
@@ -61,6 +66,31 @@
             android:exported="false"
             android:theme="@style/Theme.FinanceTracker"
             android:screenOrientation="portrait" />
+            
+        <!-- Register the daily reminder broadcast receiver -->
+        <receiver 
+            android:name="com.example.financetracker.notification.DailyReminderReceiver" 
+            android:exported="false" />
+            
+        <!-- Add a boot completed receiver to restart alarms after device reboot -->
+        <receiver
+            android:name="com.example.financetracker.notification.BootCompleteReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- File Provider for sharing PDFs -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
             
     </application>
 
