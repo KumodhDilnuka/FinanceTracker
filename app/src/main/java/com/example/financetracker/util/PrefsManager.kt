@@ -96,14 +96,14 @@ object PrefsManager {
     
     private fun getDefaultCategories(): List<Category> {
         return listOf(
-            Category("Salary", com.example.financetracker.data.TxType.INCOME, "💰"),
+            Category("Salary", com.example.financetracker.data.TxType.INCOME, "\uD83D\uDCB8"),
             Category("Gifts", com.example.financetracker.data.TxType.INCOME, "🎁"),
             Category("Food", com.example.financetracker.data.TxType.EXPENSE, "🍔"),
             Category("Transport", com.example.financetracker.data.TxType.EXPENSE, "🚗"),
             Category("Entertainment", com.example.financetracker.data.TxType.EXPENSE, "🎬"),
             Category("Housing", com.example.financetracker.data.TxType.EXPENSE, "🏠"),
             Category("Utilities", com.example.financetracker.data.TxType.EXPENSE, "💡"),
-            Category("Healthcare", com.example.financetracker.data.TxType.EXPENSE, "��")
+            Category("Healthcare", com.example.financetracker.data.TxType.EXPENSE, "\uD83C\uDFE5")
         )
     }
     
