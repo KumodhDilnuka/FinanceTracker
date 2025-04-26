@@ -33,6 +33,10 @@ import java.io.File
 import android.os.Build
 import java.util.*
 import java.text.SimpleDateFormat
+import com.example.financetracker.util.ReminderPrefs
+import com.example.financetracker.notification.ReminderScheduler
+import android.app.TimePickerDialog
+import com.example.financetracker.notification.NotificationHelper
 
 class SettingsFragment : Fragment() {
 
@@ -51,6 +55,8 @@ class SettingsFragment : Fragment() {
     private lateinit var switchAppLock: com.google.android.material.switchmaterial.SwitchMaterial
     private lateinit var buttonChangePasscode: com.google.android.material.button.MaterialButton
     private lateinit var buttonExportPDF: com.google.android.material.button.MaterialButton
+    private lateinit var textReminderTime: TextView
+    private lateinit var buttonChangeReminderTime: com.google.android.material.button.MaterialButton
     
     private val REQUEST_OPEN_DOCUMENT = 1001
     private val REQUEST_STORAGE_PERMISSION = 1002
@@ -130,6 +136,13 @@ class SettingsFragment : Fragment() {
         // Set initial state from preferences
         switchAppLock.isChecked = com.example.financetracker.util.SecurityManager.isPasscodeEnabled(requireContext())
         buttonChangePasscode.visibility = if (switchAppLock.isChecked) View.VISIBLE else View.GONE
+        
+        // Initialize reminder time views
+        textReminderTime = view.findViewById(R.id.textReminderTime)
+        buttonChangeReminderTime = view.findViewById(R.id.buttonChangeReminderTime)
+        
+        // Set initial values
+        updateReminderTimeText()
     }
     
     private fun setupCurrencySpinner() {
@@ -242,6 +255,11 @@ class SettingsFragment : Fragment() {
         // Setup change passcode button
         buttonChangePasscode.setOnClickListener {
             PasscodeActivity.startForChange(requireContext())
+        }
+        
+        // Setup reminder time button
+        buttonChangeReminderTime.setOnClickListener {
+            showTimePickerDialog()
         }
     }
     
@@ -839,6 +857,60 @@ class SettingsFragment : Fragment() {
                 ),
                 requestCode
             )
+        }
+    }
+
+    /**
+     * Update the reminder time text with the current setting
+     */
+    private fun updateReminderTimeText() {
+        textReminderTime.text = ReminderPrefs.getFormattedReminderTime()
+    }
+    
+    /**
+     * Show time picker dialog to set the reminder time
+     */
+    private fun showTimePickerDialog() {
+        // Get current reminder time
+        val currentHour = ReminderPrefs.getReminderHour()
+        val currentMinute = ReminderPrefs.getReminderMinute()
+        
+        val timePickerDialog = TimePickerDialog(
+            requireContext(),
+            { _, hourOfDay, minute ->
+                // Save the new time
+                ReminderPrefs.setReminderTime(hourOfDay, minute)
+                
+                // Update the display
+                updateReminderTimeText()
+                
+                // Reschedule the reminder with the new time
+                rescheduleReminder(hourOfDay, minute)
+            },
+            currentHour,
+            currentMinute,
+            false // Not 24-hour format
+        )
+        
+        timePickerDialog.show()
+    }
+    
+    /**
+     * Reschedule the daily reminder with the new time
+     */
+    private fun rescheduleReminder(hour: Int, minute: Int) {
+        try {
+            // Cancel the existing reminder
+            ReminderScheduler.cancelDailyReminder(requireContext())
+            
+            // Schedule a new reminder with the updated time
+            ReminderScheduler.scheduleDailyReminder(requireContext(), hour, minute)
+            
+            // Show simple confirmation
+            showSnackbar("Daily reminder set for " + ReminderPrefs.getFormattedReminderTime())
+            
+        } catch (e: Exception) {
+            showSnackbar("Error updating reminder: ${e.message}")
         }
     }
 

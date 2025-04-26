@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.example.financetracker.util.ReminderPrefs
 
 /**
  * BroadcastReceiver that listens for BOOT_COMPLETED action to reschedule notifications
@@ -18,9 +19,15 @@ class BootCompleteReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             Log.d(TAG, "Boot completed, rescheduling daily reminders")
             try {
-                // Reschedule the daily reminder notifications
-                // ReminderScheduler now handles permission errors internally
-                ReminderScheduler.scheduleDailyReminder(context)
+                // Initialize reminder preferences
+                ReminderPrefs.init(context)
+                
+                // Get user's preferred reminder time
+                val reminderHour = ReminderPrefs.getReminderHour()
+                val reminderMinute = ReminderPrefs.getReminderMinute()
+                
+                // Reschedule the daily reminder notifications with user's preferred time
+                ReminderScheduler.scheduleDailyReminder(context, reminderHour, reminderMinute)
             } catch (e: Exception) {
                 // Log error but don't crash the app
                 Log.e(TAG, "Error rescheduling reminders after boot: ${e.message}", e)
